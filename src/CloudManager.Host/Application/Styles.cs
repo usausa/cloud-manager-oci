@@ -2,17 +2,24 @@ namespace CloudManager.Host.Application;
 
 using MudBlazor;
 
+// Oracle Red based palette to tell the OCI console apart from the AWS one
 public static class Styles
 {
+    private const string OracleRed = "#C74634";
+    private const string OracleRedDark = "#A63A2B";
+    private const string OracleRedLight = "#DB6A58";
+    private const string OracleAccent = "#F0862B";
+    private const string OracleSlate = "#312D2A";
+
     public static MudTheme Theme { get; } = new()
     {
         PaletteLight = new PaletteLight
         {
-            Primary = Colors.Blue.Darken3,
-            PrimaryDarken = Colors.Blue.Darken4,
-            PrimaryLighten = Colors.Blue.Darken2,
-            Secondary = Colors.LightBlue.Darken2,
-            AppbarBackground = Colors.Blue.Darken3,
+            Primary = OracleRed,
+            PrimaryDarken = OracleRedDark,
+            PrimaryLighten = OracleRedLight,
+            Secondary = OracleAccent,
+            AppbarBackground = OracleSlate,
             AppbarText = Colors.Shades.White,
             DrawerBackground = Colors.Gray.Lighten4,
             DrawerText = Colors.Gray.Darken4,

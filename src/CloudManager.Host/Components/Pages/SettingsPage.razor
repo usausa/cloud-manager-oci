@@ -1,5 +1,5 @@
 @page "/settings"
-@inherits AwsComponentBase
+@inherits OciComponentBase
 
 <PageTitle>CloudManager - 設定</PageTitle>
 
@@ -8,13 +8,14 @@
 <MudPaper Class="settings-card pa-2 mb-2">
     <MudText Typo="Typo.subtitle2" Class="mb-1">現在の設定</MudText>
     <MudText Typo="Typo.body2">プロファイル: <strong>@Session.ProfileName</strong></MudText>
-    <MudText Typo="Typo.body2">リージョン: <strong>@(Session.Region?.SystemName ?? "未設定")</strong></MudText>
+    <MudText Typo="Typo.body2">リージョン: <strong>@(Session.Region?.RegionId ?? "未設定")</strong></MudText>
+    <MudText Typo="Typo.body2">コンパートメント: <strong>@Session.CompartmentName</strong></MudText>
 </MudPaper>
 
 <MudPaper Class="settings-card pa-2">
     @if (Session.AvailableProfiles.Count == 0)
     {
-        <MudAlert Severity="Severity.Warning" Class="mb-2">~/.aws にプロファイルが見つかりません。</MudAlert>
+        <MudAlert Severity="Severity.Warning" Class="mb-2">~/.oci/config にプロファイルが見つかりません。</MudAlert>
     }
 
     <MudSelect T="string" @bind-Value="selectedProfile" Label="プロファイル" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2">
@@ -28,6 +29,14 @@
         @foreach (var region in Regions)
         {
             <MudSelectItem Value="@region">@region</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSelect T="string" @bind-Value="selectedCompartment" Label="コンパートメント" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2"
+               Disabled="@(IsLoading || (Session.Compartments.Count == 0))">
+        @foreach (var compartment in Session.Compartments)
+        {
+            <MudSelectItem Value="@compartment.Id">@compartment.Path</MudSelectItem>
         }
     </MudSelect>
 

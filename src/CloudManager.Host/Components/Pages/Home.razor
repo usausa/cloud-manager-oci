@@ -1,5 +1,5 @@
 @page "/"
-@inherits AwsComponentBase
+@inherits OciComponentBase
 
 <PageTitle>CloudManager - ダッシュボード</PageTitle>
 
@@ -8,7 +8,7 @@
 @if (!Session.IsProfileAvailable)
 {
     <MudAlert Severity="Severity.Warning" Class="mb-2">
-        プロファイル '@Session.ProfileName' が ~/.aws/credentials または ~/.aws/config に見つかりません。
+        プロファイル '@Session.ProfileName' が ~/.oci/config に見つかりません。
         <MudLink Href="settings" Class="ml-2">設定を開く</MudLink>
     </MudAlert>
 }
@@ -16,8 +16,9 @@ else
 {
     <MudPaper Class="pa-2 mb-3">
         <MudGrid Spacing="1">
-            <MudItem xs="6"><MudText Typo="Typo.body2"><b>プロファイル: </b>@Session.ProfileName</MudText></MudItem>
-            <MudItem xs="6"><MudText Typo="Typo.body2"><b>リージョン: </b>@(Session.Region?.SystemName ?? "-")</MudText></MudItem>
+            <MudItem xs="12" sm="3"><MudText Typo="Typo.body2"><b>プロファイル: </b>@Session.ProfileName</MudText></MudItem>
+            <MudItem xs="12" sm="3"><MudText Typo="Typo.body2"><b>リージョン: </b>@(Session.Region?.RegionId ?? "-")</MudText></MudItem>
+            <MudItem xs="12" sm="6"><MudText Typo="Typo.body2"><b>コンパートメント: </b>@ScopeName</MudText></MudItem>
         </MudGrid>
     </MudPaper>
 
@@ -32,9 +33,9 @@ else
                 }
                 else
                 {
-                    <MudText Typo="Typo.subtitle2">EC2 稼働中</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Success">@ec2Running</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">停止中: @ec2Stopped</MudText>
+                    <MudText Typo="Typo.subtitle2">Compute 稼働中</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Success">@computeRunning</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">停止中: @computeStopped</MudText>
                 }
             </MudPaper>
         </MudItem>
@@ -46,9 +47,9 @@ else
                 }
                 else
                 {
-                    <MudText Typo="Typo.subtitle2">ECS 稼働タスク</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Primary">@ecsRunningTasks</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">クラスター: @ecsClusters</MudText>
+                    <MudText Typo="Typo.subtitle2">Autonomous Database 稼働中</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Success">@adbAvailable</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">停止中: @adbStopped</MudText>
                 }
             </MudPaper>
         </MudItem>
@@ -60,9 +61,9 @@ else
                 }
                 else
                 {
-                    <MudText Typo="Typo.subtitle2">RDS 稼働中</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Success">@rdsAvailable</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">停止中: @rdsStopped</MudText>
+                    <MudText Typo="Typo.subtitle2">Container Instances 稼働中</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Primary">@containerActive</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">停止中: @containerInactive</MudText>
                 }
             </MudPaper>
         </MudItem>
@@ -74,9 +75,9 @@ else
                 }
                 else
                 {
-                    <MudText Typo="Typo.subtitle2">CloudWatch アラーム</MudText>
-                    <MudText Typo="Typo.h4" Color="@(alarmCount > 0 ? Color.Error : Color.Default)">@alarmCount</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">ALARM 状態</MudText>
+                    <MudText Typo="Typo.subtitle2">アラーム発報中</MudText>
+                    <MudText Typo="Typo.h4" Color="@(alarmFiring > 0 ? Color.Error : Color.Default)">@alarmFiring</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">FIRING 状態</MudText>
                 }
             </MudPaper>
         </MudItem>

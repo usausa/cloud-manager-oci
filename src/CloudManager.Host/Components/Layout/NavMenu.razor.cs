@@ -8,16 +8,16 @@ public sealed partial class NavMenu
     // Expand the group containing the current URL
     private static readonly Dictionary<NavGroup, string[]> GroupRoutes = new()
     {
-        [NavGroup.Compute] = ["ec2", "ebs", "ecs", "lambda"],
-        [NavGroup.Container] = ["ecr"],
-        [NavGroup.Storage] = ["s3", "rds", "dynamodb"],
-        [NavGroup.Network] = ["vpc", "elastic-ip", "cloudfront", "elb", "route53", "acm"],
-        [NavGroup.Api] = ["apigw", "eventbridge"],
-        [NavGroup.Messaging] = ["sqs", "sns"],
-        [NavGroup.Monitor] = ["cloudwatch", "cloudwatch-logs"],
-        [NavGroup.Security] = ["ssm-parameters", "secrets-manager", "cognito"],
+        [NavGroup.Compute] = ["compute", "block-volume", "container-instances", "functions"],
+        [NavGroup.Container] = ["ocir"],
+        [NavGroup.Storage] = ["object-storage", "adb", "nosql"],
+        [NavGroup.Network] = ["vcn", "public-ip", "load-balancer", "dns", "certificates"],
+        [NavGroup.Api] = ["api-gateway", "events"],
+        [NavGroup.Messaging] = ["queue", "notifications"],
+        [NavGroup.Monitor] = ["monitoring", "logging"],
+        [NavGroup.Security] = ["vault", "identity-domains", "bastion"],
         [NavGroup.Jobs] = ["jobs"],
-        [NavGroup.Other] = ["cost", "settings"]
+        [NavGroup.Other] = ["resource-search", "cost", "settings"]
     };
 
     private readonly Dictionary<NavGroup, bool> expanded = Enum.GetValues<NavGroup>().ToDictionary(static x => x, static _ => false);

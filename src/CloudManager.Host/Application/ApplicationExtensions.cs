@@ -7,17 +7,14 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
 
-using Amazon;
-
 using CloudManager.Accessors;
 using CloudManager.Host.Components;
-using CloudManager.Host.Endpoints;
-using CloudManager.Host.Infrastructure.Aws;
 using CloudManager.Host.Infrastructure.ExceptionHandling;
 using CloudManager.Host.Infrastructure.HealthChecks;
 using CloudManager.Host.Infrastructure.Jobs;
+using CloudManager.Host.Infrastructure.OracleCloud;
 using CloudManager.Host.Workers;
-using CloudManager.Infrastructure.Aws;
+using CloudManager.Infrastructure.OracleCloud;
 
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -56,9 +53,6 @@ public static class ApplicationExtensions
 
         // Encoding
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        // AWS SDK collections are empty instead of null
-        AWSConfigs.InitializeCollections = true;
 
         return builder;
     }
@@ -290,23 +284,23 @@ public static class ApplicationExtensions
         builder.Services.AddSingleton<JobManager>();
         builder.Services.AddHostedService<JobSchedulerWorker>();
 
-        // AWS
-        builder.Services.AddScoped<AwsSession>();
+        // OCI
+        builder.Services.AddScoped<OciSession>();
         builder.Services.AddScoped(static p =>
         {
-            // Resolved from the session per client because the profile can be switched in the UI
-            var session = p.GetRequiredService<AwsSession>();
-            return new AwsClientFactory(() => CredentialResolver.Resolve(session.ProfileName, session.Region?.SystemName));
+            // Resolved from the session per client because the profile and compartment can be switched in the UI
+            var session = p.GetRequiredService<OciSession>();
+            return new OciClientFactory(session.ResolveContext);
         });
-        builder.Services.AddAwsServices();
+        builder.Services.AddOciServices();
 
         // Setting
         builder.Services.AddOptions<ProfilerSetting>().BindConfiguration("Profiler").ValidateDataAnnotations().ValidateOnStart();
         builder.Services.AddSingleton(static p => p.GetRequiredService<IOptions<ProfilerSetting>>().Value);
         builder.Services.AddOptions<LogSetting>().BindConfiguration("Log").ValidateDataAnnotations().ValidateOnStart();
         builder.Services.AddSingleton(static p => p.GetRequiredService<IOptions<LogSetting>>().Value);
-        builder.Services.AddOptions<AwsSetting>().BindConfiguration("Aws").ValidateDataAnnotations().ValidateOnStart();
-        builder.Services.AddSingleton(static p => p.GetRequiredService<IOptions<AwsSetting>>().Value);
+        builder.Services.AddOptions<OciSetting>().BindConfiguration("Oci").ValidateDataAnnotations().ValidateOnStart();
+        builder.Services.AddSingleton(static p => p.GetRequiredService<IOptions<OciSetting>>().Value);
         builder.Services.AddOptions<JobExecutionOptions>().BindConfiguration("Job").ValidateDataAnnotations().ValidateOnStart();
         builder.Services.AddSingleton(static p => p.GetRequiredService<IOptions<JobExecutionOptions>>().Value);
 
@@ -340,9 +334,6 @@ public static class ApplicationExtensions
         // Blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
-
-        // API
-        app.MapS3Endpoints();
 
         // Health
         app.MapHealthChecks(HealthEndpointPath);

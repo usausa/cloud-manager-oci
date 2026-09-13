@@ -5,24 +5,23 @@ public static class JobOperationCatalog
 {
     public static IReadOnlyList<JobOperation> ForService(JobServiceType type) => type switch
     {
-        JobServiceType.Ec2 => [JobOperation.Ec2Start, JobOperation.Ec2Stop, JobOperation.Ec2Reboot],
-        JobServiceType.Rds => [JobOperation.RdsStart, JobOperation.RdsStop],
-        JobServiceType.Ecs => [JobOperation.EcsUpdateDesiredCount],
-        JobServiceType.Lambda => [JobOperation.LambdaInvoke],
-        JobServiceType.CloudFront => [JobOperation.CloudFrontInvalidate],
+        JobServiceType.Compute => [JobOperation.ComputeStart, JobOperation.ComputeStop, JobOperation.ComputeReboot],
+        JobServiceType.AutonomousDatabase => [JobOperation.AdbStart, JobOperation.AdbStop],
+        JobServiceType.ContainerInstance => [JobOperation.ContainerInstanceStart, JobOperation.ContainerInstanceStop],
+        JobServiceType.Functions => [JobOperation.FunctionsInvoke],
         _ => []
     };
 
     public static string DisplayName(JobOperation operation) => operation switch
     {
-        JobOperation.Ec2Start => "EC2 起動",
-        JobOperation.Ec2Stop => "EC2 停止",
-        JobOperation.Ec2Reboot => "EC2 再起動",
-        JobOperation.RdsStart => "RDS 起動",
-        JobOperation.RdsStop => "RDS 停止",
-        JobOperation.EcsUpdateDesiredCount => "ECS タスク数更新",
-        JobOperation.LambdaInvoke => "Lambda 実行",
-        JobOperation.CloudFrontInvalidate => "CloudFront キャッシュ無効化",
+        JobOperation.ComputeStart => "Compute 起動",
+        JobOperation.ComputeStop => "Compute 停止",
+        JobOperation.ComputeReboot => "Compute 再起動",
+        JobOperation.AdbStart => "ADB 起動",
+        JobOperation.AdbStop => "ADB 停止",
+        JobOperation.ContainerInstanceStart => "Container Instance 起動",
+        JobOperation.ContainerInstanceStop => "Container Instance 停止",
+        JobOperation.FunctionsInvoke => "Functions 実行",
         _ => operation.ToString()
     };
 }

@@ -4,50 +4,49 @@
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">ダッシュボード</MudNavLink>
     <MudNavGroup Title="コンピュート" Icon="@Icons.Material.Filled.Memory"
                  Expanded="@IsExpanded(NavGroup.Compute)" ExpandedChanged="@(x => SetExpanded(NavGroup.Compute, x))">
-        <MudNavLink Href="ec2" Icon="@Icons.Material.Filled.Computer">EC2</MudNavLink>
-        <MudNavLink Href="ebs" Icon="@Icons.Material.Filled.Album">EBS</MudNavLink>
-        <MudNavLink Href="ecs" Icon="@Icons.Material.Filled.AccountTree">ECS</MudNavLink>
-        <MudNavLink Href="lambda" Icon="@Icons.Material.Filled.Functions">Lambda</MudNavLink>
+        <MudNavLink Href="compute" Icon="@Icons.Material.Filled.Computer">Compute</MudNavLink>
+        <MudNavLink Href="block-volume" Icon="@Icons.Material.Filled.Album">Block Volume</MudNavLink>
+        <MudNavLink Href="container-instances" Icon="@Icons.Material.Filled.AccountTree">Container Instances</MudNavLink>
+        <MudNavLink Href="functions" Icon="@Icons.Material.Filled.Functions">Functions</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="コンテナ" Icon="@Icons.Material.Filled.Inventory2"
                  Expanded="@IsExpanded(NavGroup.Container)" ExpandedChanged="@(x => SetExpanded(NavGroup.Container, x))">
-        <MudNavLink Href="ecr" Icon="@Icons.Material.Filled.Inventory2">ECR</MudNavLink>
+        <MudNavLink Href="ocir" Icon="@Icons.Material.Filled.Inventory2">Container Registry</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="ストレージ / DB" Icon="@Icons.Material.Filled.Storage"
                  Expanded="@IsExpanded(NavGroup.Storage)" ExpandedChanged="@(x => SetExpanded(NavGroup.Storage, x))">
-        <MudNavLink Href="s3" Icon="@Icons.Material.Filled.Folder">S3</MudNavLink>
-        <MudNavLink Href="rds" Icon="@Icons.Material.Filled.Storage">RDS</MudNavLink>
-        <MudNavLink Href="dynamodb" Icon="@Icons.Material.Filled.TableChart">DynamoDB</MudNavLink>
+        <MudNavLink Href="object-storage" Icon="@Icons.Material.Filled.Folder">Object Storage</MudNavLink>
+        <MudNavLink Href="adb" Icon="@Icons.Material.Filled.Storage">Autonomous Database</MudNavLink>
+        <MudNavLink Href="nosql" Icon="@Icons.Material.Filled.TableChart">NoSQL</MudNavLink>
     </MudNavGroup>
-    <MudNavGroup Title="ネットワーク / 配信" Icon="@Icons.Material.Filled.Lan"
+    <MudNavGroup Title="ネットワーク" Icon="@Icons.Material.Filled.Lan"
                  Expanded="@IsExpanded(NavGroup.Network)" ExpandedChanged="@(x => SetExpanded(NavGroup.Network, x))">
-        <MudNavLink Href="vpc" Icon="@Icons.Material.Filled.Lan">VPC</MudNavLink>
-        <MudNavLink Href="elastic-ip" Icon="@Icons.Material.Filled.Language">Elastic IP</MudNavLink>
-        <MudNavLink Href="cloudfront" Icon="@Icons.Material.Filled.Public">CloudFront</MudNavLink>
-        <MudNavLink Href="elb" Icon="@Icons.Material.Filled.Balance">ELB</MudNavLink>
-        <MudNavLink Href="route53" Icon="@Icons.Material.Filled.Dns">Route53</MudNavLink>
-        <MudNavLink Href="acm" Icon="@Icons.Material.Filled.Lock">ACM</MudNavLink>
+        <MudNavLink Href="vcn" Icon="@Icons.Material.Filled.Lan">VCN</MudNavLink>
+        <MudNavLink Href="public-ip" Icon="@Icons.Material.Filled.Language">Public IP</MudNavLink>
+        <MudNavLink Href="load-balancer" Icon="@Icons.Material.Filled.Balance">Load Balancer</MudNavLink>
+        <MudNavLink Href="dns" Icon="@Icons.Material.Filled.Dns">DNS</MudNavLink>
+        <MudNavLink Href="certificates" Icon="@Icons.Material.Filled.Lock">Certificates</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="API / 統合" Icon="@Icons.Material.Filled.Api"
                  Expanded="@IsExpanded(NavGroup.Api)" ExpandedChanged="@(x => SetExpanded(NavGroup.Api, x))">
-        <MudNavLink Href="apigw" Icon="@Icons.Material.Filled.Api">API Gateway</MudNavLink>
-        <MudNavLink Href="eventbridge" Icon="@Icons.Material.Filled.EventNote">EventBridge</MudNavLink>
+        <MudNavLink Href="api-gateway" Icon="@Icons.Material.Filled.Api">API Gateway</MudNavLink>
+        <MudNavLink Href="events" Icon="@Icons.Material.Filled.EventNote">Events</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="メッセージング" Icon="@Icons.Material.Filled.Mail"
                  Expanded="@IsExpanded(NavGroup.Messaging)" ExpandedChanged="@(x => SetExpanded(NavGroup.Messaging, x))">
-        <MudNavLink Href="sqs" Icon="@Icons.Material.Filled.Mail">SQS</MudNavLink>
-        <MudNavLink Href="sns" Icon="@Icons.Material.Filled.NotificationsActive">SNS</MudNavLink>
+        <MudNavLink Href="queue" Icon="@Icons.Material.Filled.Mail">Queue</MudNavLink>
+        <MudNavLink Href="notifications" Icon="@Icons.Material.Filled.NotificationsActive">Notifications</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="監視" Icon="@Icons.Material.Filled.Timeline"
                  Expanded="@IsExpanded(NavGroup.Monitor)" ExpandedChanged="@(x => SetExpanded(NavGroup.Monitor, x))">
-        <MudNavLink Href="cloudwatch" Icon="@Icons.Material.Filled.Timeline">CloudWatch</MudNavLink>
-        <MudNavLink Href="cloudwatch-logs" Icon="@Icons.Material.Filled.Article">CloudWatch Logs</MudNavLink>
+        <MudNavLink Href="monitoring" Icon="@Icons.Material.Filled.Timeline">Monitoring</MudNavLink>
+        <MudNavLink Href="logging" Icon="@Icons.Material.Filled.Article">Logging</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="セキュリティ / ID" Icon="@Icons.Material.Filled.Security"
                  Expanded="@IsExpanded(NavGroup.Security)" ExpandedChanged="@(x => SetExpanded(NavGroup.Security, x))">
-        <MudNavLink Href="ssm-parameters" Icon="@Icons.Material.Filled.Tune">SSM Parameter Store</MudNavLink>
-        <MudNavLink Href="secrets-manager" Icon="@Icons.Material.Filled.VpnKey">Secrets Manager</MudNavLink>
-        <MudNavLink Href="cognito" Icon="@Icons.Material.Filled.People">Cognito</MudNavLink>
+        <MudNavLink Href="vault" Icon="@Icons.Material.Filled.VpnKey">Vault</MudNavLink>
+        <MudNavLink Href="identity-domains" Icon="@Icons.Material.Filled.People">Identity Domains</MudNavLink>
+        <MudNavLink Href="bastion" Icon="@Icons.Material.Filled.Terminal">Bastion</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="ジョブ" Icon="@Icons.Material.Filled.Schedule"
                  Expanded="@IsExpanded(NavGroup.Jobs)" ExpandedChanged="@(x => SetExpanded(NavGroup.Jobs, x))">
@@ -56,7 +55,8 @@
     </MudNavGroup>
     <MudNavGroup Title="その他" Icon="@Icons.Material.Filled.Calculate"
                  Expanded="@IsExpanded(NavGroup.Other)" ExpandedChanged="@(x => SetExpanded(NavGroup.Other, x))">
-        <MudNavLink Href="cost" Icon="@Icons.Material.Filled.AttachMoney">Cost (USD)</MudNavLink>
+        <MudNavLink Href="resource-search" Icon="@Icons.Material.Filled.Search">リソース検索</MudNavLink>
+        <MudNavLink Href="cost" Icon="@Icons.Material.Filled.AttachMoney">Cost</MudNavLink>
         <MudNavLink Href="settings" Icon="@Icons.Material.Filled.Settings">設定</MudNavLink>
     </MudNavGroup>
 </MudNavMenu>

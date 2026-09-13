@@ -12,9 +12,9 @@ public sealed class JobForm
 
     public string RegionName { get; set; } = string.Empty;
 
-    public JobServiceType ServiceType { get; set; } = JobServiceType.Ec2;
+    public JobServiceType ServiceType { get; set; } = JobServiceType.Compute;
 
-    public JobOperation Operation { get; set; } = JobOperation.Ec2Start;
+    public JobOperation Operation { get; set; } = JobOperation.ComputeStart;
 
     public string CronExpression { get; set; } = "0 9 * * 1-5";
 
@@ -22,30 +22,21 @@ public sealed class JobForm
 
     public bool IsEnabled { get; set; } = true;
 
-    // EC2
+    // Compute
     public string InstanceId { get; set; } = string.Empty;
 
-    // RDS
-    public string DbInstanceId { get; set; } = string.Empty;
+    // Autonomous Database
+    public string DatabaseId { get; set; } = string.Empty;
 
-    // ECS
-    public string Cluster { get; set; } = string.Empty;
+    // Container Instance
+    public string ContainerInstanceId { get; set; } = string.Empty;
 
-    public string ServiceName { get; set; } = string.Empty;
-
-    public int DesiredCount { get; set; }
-
-    // Lambda
-    public string FunctionName { get; set; } = string.Empty;
+    // Functions
+    public string FunctionId { get; set; } = string.Empty;
 
     public string? Payload { get; set; }
 
-    public string InvocationType { get; set; } = "Event";
-
-    // CloudFront
-    public string DistributionId { get; set; } = string.Empty;
-
-    public string Paths { get; set; } = "/*";
+    public string InvokeType { get; set; } = FunctionsService.InvokeTypeDetached;
 
     public DateTime CreatedAt { get; set; }
 }

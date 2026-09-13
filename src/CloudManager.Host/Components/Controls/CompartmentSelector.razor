@@ -1,0 +1,13 @@
+@inherits OciComponentBase
+
+@if (Session.IsProfileAvailable)
+{
+    <MudSelect T="string" Value="Session.CompartmentId" ValueChanged="OnCompartmentChanged" Dense="true" Margin="Margin.Dense"
+               Variant="Variant.Outlined" Class="compartment-select" Disabled="@(IsLoading || (Session.Compartments.Count == 0))"
+               Placeholder="コンパートメント" AnchorOrigin="Origin.BottomCenter">
+        @foreach (var compartment in Session.Compartments)
+        {
+            <MudSelectItem Value="@compartment.Id">@compartment.Path</MudSelectItem>
+        }
+    </MudSelect>
+}

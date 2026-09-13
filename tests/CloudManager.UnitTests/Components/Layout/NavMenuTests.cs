@@ -15,7 +15,7 @@ public sealed class NavMenuTests : MudBlazorTestBase
         // Assert
         var hrefs = cut.FindAll("a").Select(static x => x.GetAttribute("href")).ToList();
         Assert.Equal(28, hrefs.Count);
-        Assert.Contains("ec2", hrefs);
+        Assert.Contains("compute", hrefs);
         Assert.Contains("jobs/history", hrefs);
         Assert.Contains("settings", hrefs);
     }

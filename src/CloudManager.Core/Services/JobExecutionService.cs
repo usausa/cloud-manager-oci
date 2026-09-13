@@ -1,12 +1,12 @@
 namespace CloudManager.Services;
 
-using Amazon.Runtime;
-
-using CloudManager.Infrastructure.Aws;
+using CloudManager.Infrastructure.OracleCloud;
 using CloudManager.Models.Jobs;
-using CloudManager.Services.Aws;
+using CloudManager.Services.OracleCloud;
 
-// Executes the AWS operation of a job definition and records the result
+using Oci.Common.Model;
+
+// Executes the OCI operation of a job definition and records the result
 public sealed class JobExecutionService
 {
     private readonly ILogger<JobExecutionService> log;
@@ -36,8 +36,9 @@ public sealed class JobExecutionService
         string? errorDetail = null;
         try
         {
-            // Jobs run with the profile of the definition, independent of the UI session
-            var factory = AwsClientFactory.Create(job.ProfileName, job.RegionName);
+            // Jobs run with the profile of the definition, independent of the UI session.
+            // Operations target resources by OCID, so no compartment is needed.
+            var factory = OciClientFactory.Create(job.ProfileName, job.RegionName, null);
             message = await DispatchAsync(factory, job, cancellationToken);
             status = JobExecutionStatus.Success;
             log.InfoJobSuccess(job.Id, job.Name, message);
@@ -47,10 +48,10 @@ public sealed class JobExecutionService
             status = JobExecutionStatus.Failure;
             errorDetail = "Cancelled";
         }
-        catch (AmazonServiceException ex)
+        catch (OciException ex)
         {
             status = JobExecutionStatus.Failure;
-            errorDetail = $"[{ex.ErrorCode}] {ex.Message}";
+            errorDetail = ex.FormatError();
             log.WarnJobFailed(job.Id, job.Name, errorDetail, ex);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -67,64 +68,64 @@ public sealed class JobExecutionService
         return status;
     }
 
-    private static async ValueTask<string?> DispatchAsync(AwsClientFactory factory, JobDefinition job, CancellationToken cancellationToken)
+    private static async ValueTask<string?> DispatchAsync(OciClientFactory factory, JobDefinition job, CancellationToken cancellationToken)
     {
         switch (job.Operation)
         {
-            case JobOperation.Ec2Start:
+            case JobOperation.ComputeStart:
             {
-                var p = (Ec2InstanceParameters)job.Parameters;
-                await new Ec2Service(factory).StartInstancesAsync([p.InstanceId], wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
+                var p = (ComputeInstanceParameters)job.Parameters;
+                await new ComputeService(factory).StartAsync(p.InstanceId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
                 return $"Started: {p.InstanceId}";
             }
 
-            case JobOperation.Ec2Stop:
+            case JobOperation.ComputeStop:
             {
-                var p = (Ec2InstanceParameters)job.Parameters;
-                await new Ec2Service(factory).StopInstancesAsync([p.InstanceId], force: false, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
+                var p = (ComputeInstanceParameters)job.Parameters;
+                await new ComputeService(factory).StopAsync(p.InstanceId, force: false, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
                 return $"Stopped: {p.InstanceId}";
             }
 
-            case JobOperation.Ec2Reboot:
+            case JobOperation.ComputeReboot:
             {
-                var p = (Ec2InstanceParameters)job.Parameters;
-                await new Ec2Service(factory).RebootInstancesAsync([p.InstanceId], cancellationToken);
+                var p = (ComputeInstanceParameters)job.Parameters;
+                await new ComputeService(factory).RebootAsync(p.InstanceId, force: false, cancellationToken);
                 return $"Rebooted: {p.InstanceId}";
             }
 
-            case JobOperation.RdsStart:
+            case JobOperation.AdbStart:
             {
-                var p = (RdsInstanceParameters)job.Parameters;
-                await new RdsService(factory).StartInstanceAsync(p.DbInstanceId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
-                return $"Started: {p.DbInstanceId}";
+                var p = (AutonomousDatabaseParameters)job.Parameters;
+                await new AutonomousDatabaseService(factory).StartAsync(p.DatabaseId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
+                return $"Started: {p.DatabaseId}";
             }
 
-            case JobOperation.RdsStop:
+            case JobOperation.AdbStop:
             {
-                var p = (RdsInstanceParameters)job.Parameters;
-                await new RdsService(factory).StopInstanceAsync(p.DbInstanceId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
-                return $"Stopped: {p.DbInstanceId}";
+                var p = (AutonomousDatabaseParameters)job.Parameters;
+                await new AutonomousDatabaseService(factory).StopAsync(p.DatabaseId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
+                return $"Stopped: {p.DatabaseId}";
             }
 
-            case JobOperation.EcsUpdateDesiredCount:
+            case JobOperation.ContainerInstanceStart:
             {
-                var p = (EcsDesiredCountParameters)job.Parameters;
-                await new EcsService(factory).UpdateServiceDesiredCountAsync(p.Cluster, p.ServiceName, p.DesiredCount, cancellationToken);
-                return $"Updated: {p.Cluster}/{p.ServiceName} desired={p.DesiredCount}";
+                var p = (ContainerInstanceParameters)job.Parameters;
+                await new ContainerInstanceService(factory).StartAsync(p.ContainerInstanceId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
+                return $"Started: {p.ContainerInstanceId}";
             }
 
-            case JobOperation.LambdaInvoke:
+            case JobOperation.ContainerInstanceStop:
             {
-                var p = (LambdaInvokeParameters)job.Parameters;
-                var result = await new LambdaService(factory).InvokeAsync(p.FunctionName, p.Payload, p.InvocationType, cancellationToken);
-                return $"Invoked: {p.FunctionName} status={result.StatusCode}";
+                var p = (ContainerInstanceParameters)job.Parameters;
+                await new ContainerInstanceService(factory).StopAsync(p.ContainerInstanceId, wait: false, timeoutSeconds: 0, NullProgress.Instance, cancellationToken);
+                return $"Stopped: {p.ContainerInstanceId}";
             }
 
-            case JobOperation.CloudFrontInvalidate:
+            case JobOperation.FunctionsInvoke:
             {
-                var p = (CloudFrontInvalidateParameters)job.Parameters;
-                await new CloudFrontService(factory).InvalidateCacheAsync(p.DistributionId, [p.Paths], cancellationToken);
-                return $"Invalidated: {p.DistributionId} paths={p.Paths}";
+                var p = (FunctionsInvokeParameters)job.Parameters;
+                var result = await new FunctionsService(factory).InvokeAsync(p.FunctionId, p.Payload, p.InvokeType, cancellationToken);
+                return $"Invoked: {p.FunctionId} type={p.InvokeType} length={result.Payload.Length}";
             }
 
             default:

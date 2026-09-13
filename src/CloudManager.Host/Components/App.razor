@@ -34,7 +34,7 @@
     [CascadingParameter]
     public HttpContext HttpContext { get; set; } = default!;
 
-    // Prerendering is disabled to avoid calling AWS APIs twice
+    // Prerendering is disabled to avoid calling OCI APIs twice
     private static readonly IComponentRenderMode InteractiveServerWithoutPrerender = new InteractiveServerRenderMode(prerender: false);
 
     // Static SSR for pages with [ExcludeFromInteractiveRouting] (error etc.)

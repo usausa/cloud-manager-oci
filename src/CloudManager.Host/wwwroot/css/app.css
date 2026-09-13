@@ -17,6 +17,23 @@ body {
     align-items: center;
 }
 
+/* Compartment selector in the app bar */
+.compartment-select {
+    min-width: 280px;
+    max-width: 480px;
+}
+
+.mud-appbar .compartment-select .mud-input-outlined,
+.mud-appbar .compartment-select .mud-input-outlined .mud-input-outlined-border {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.mud-appbar .compartment-select .mud-input,
+.mud-appbar .compartment-select .mud-input-adornment-icon,
+.mud-appbar .compartment-select .mud-select-input {
+    color: #fff;
+}
+
 /* Page layout */
 .page-card {
     max-width: 400px;

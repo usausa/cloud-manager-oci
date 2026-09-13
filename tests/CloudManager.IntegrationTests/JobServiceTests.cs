@@ -18,11 +18,11 @@ public sealed class JobServiceTests : IClassFixture<TestApplicationFactory>
         0,
         name,
         "description",
-        "default",
-        "ap-northeast-1",
-        JobServiceType.Ec2,
-        JobOperation.Ec2Stop,
-        new Ec2InstanceParameters("i-0123456789abcdef0"),
+        "DEFAULT",
+        "ap-tokyo-1",
+        JobServiceType.Compute,
+        JobOperation.ComputeStop,
+        new ComputeInstanceParameters("ocid1.instance.oc1.ap-tokyo-1.example"),
         "0 21 * * 1-5",
         JobCronTimeZone.Local,
         false,
@@ -31,12 +31,11 @@ public sealed class JobServiceTests : IClassFixture<TestApplicationFactory>
 
     public static TheoryData<JobServiceType, JobOperation, JobParameters> Parameters =>
     [
-        (JobServiceType.Ec2, JobOperation.Ec2Start, new Ec2InstanceParameters("i-0123456789abcdef0")),
-        (JobServiceType.Rds, JobOperation.RdsStop, new RdsInstanceParameters("db-1")),
-        (JobServiceType.Ecs, JobOperation.EcsUpdateDesiredCount, new EcsDesiredCountParameters("cluster", "service", 2)),
-        (JobServiceType.Lambda, JobOperation.LambdaInvoke, new LambdaInvokeParameters("function", "{\"key\":\"value\"}", "Event")),
-        (JobServiceType.Lambda, JobOperation.LambdaInvoke, new LambdaInvokeParameters("function", null, "RequestResponse")),
-        (JobServiceType.CloudFront, JobOperation.CloudFrontInvalidate, new CloudFrontInvalidateParameters("E123", "/*"))
+        (JobServiceType.Compute, JobOperation.ComputeStart, new ComputeInstanceParameters("ocid1.instance.oc1.ap-tokyo-1.example")),
+        (JobServiceType.AutonomousDatabase, JobOperation.AdbStop, new AutonomousDatabaseParameters("ocid1.autonomousdatabase.oc1.ap-tokyo-1.example")),
+        (JobServiceType.ContainerInstance, JobOperation.ContainerInstanceStart, new ContainerInstanceParameters("ocid1.containerinstance.oc1.ap-tokyo-1.example")),
+        (JobServiceType.Functions, JobOperation.FunctionsInvoke, new FunctionsInvokeParameters("ocid1.fnfunc.oc1.ap-tokyo-1.example", "{\"key\":\"value\"}", "Sync")),
+        (JobServiceType.Functions, JobOperation.FunctionsInvoke, new FunctionsInvokeParameters("ocid1.fnfunc.oc1.ap-tokyo-1.example", null, "Detached"))
     ];
 
     // Operation parameters round-trip through JSON
@@ -83,7 +82,7 @@ public sealed class JobServiceTests : IClassFixture<TestApplicationFactory>
         // Assert
         Assert.NotNull(inserted);
         Assert.Equal("round-trip", inserted.Name);
-        Assert.Equal(new Ec2InstanceParameters("i-0123456789abcdef0"), inserted.Parameters);
+        Assert.Equal(new ComputeInstanceParameters("ocid1.instance.oc1.ap-tokyo-1.example"), inserted.Parameters);
         Assert.Equal(JobCronTimeZone.Local, inserted.CronTimeZone);
         Assert.NotEqual(default, inserted.CreatedAt);
         Assert.True(updated);

@@ -11,7 +11,7 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseSetting("http_ports", string.Empty);
         builder.UseSetting("ConnectionStrings:Default", $"Data Source={databaseFile};Cache=Shared;Pooling=False");
-        builder.UseSetting("Aws:DefaultProfile", "cloudmanager-test");
+        builder.UseSetting("Oci:DefaultProfile", "cloudmanager-test");
         builder.UseSetting("Profiler:SqlLog:Enable", "false");
         builder.UseSetting("Log:HttpLog", "false");
     }

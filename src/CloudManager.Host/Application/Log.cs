@@ -35,10 +35,10 @@ internal static partial class Log
     [LoggerMessage(Level = LogLevel.Error, Message = "Scheduler job error. job=[{job}]")]
     public static partial void ErrorSchedulerJobError(this ILogger logger, string job, Exception ex);
 
-    // AWS
+    // OCI
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "AWS profile load failed.")]
-    public static partial void WarnAwsProfileLoadFailed(this ILogger logger, Exception ex);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "OCI profile load failed.")]
+    public static partial void WarnOciProfileLoadFailed(this ILogger logger, Exception ex);
 
     // Error
 

@@ -22,29 +22,25 @@ public sealed class JobFormValidator : AbstractValidator<JobForm>
             .Must(BeValidCron).WithMessage("Cron 式の形式が正しくありません。");
 
         RuleFor(static x => x.InstanceId)
-            .NotEmpty().WithMessage("EC2 インスタンス ID を入力してください。")
-            .When(static x => x.Operation is JobOperation.Ec2Start or JobOperation.Ec2Stop or JobOperation.Ec2Reboot);
-        RuleFor(static x => x.DbInstanceId)
-            .NotEmpty().WithMessage("RDS DB インスタンス ID を入力してください。")
-            .When(static x => x.Operation is JobOperation.RdsStart or JobOperation.RdsStop);
-        RuleFor(static x => x.Cluster)
-            .NotEmpty().WithMessage("ECS クラスター名を入力してください。")
-            .When(static x => x.Operation == JobOperation.EcsUpdateDesiredCount);
-        RuleFor(static x => x.ServiceName)
-            .NotEmpty().WithMessage("ECS サービス名を入力してください。")
-            .When(static x => x.Operation == JobOperation.EcsUpdateDesiredCount);
-        RuleFor(static x => x.DesiredCount)
-            .GreaterThanOrEqualTo(0).WithMessage("希望タスク数は 0 以上で入力してください。")
-            .When(static x => x.Operation == JobOperation.EcsUpdateDesiredCount);
-        RuleFor(static x => x.FunctionName)
-            .NotEmpty().WithMessage("Lambda 関数名を入力してください。")
-            .When(static x => x.Operation == JobOperation.LambdaInvoke);
-        RuleFor(static x => x.DistributionId)
-            .NotEmpty().WithMessage("ディストリビューション ID を入力してください。")
-            .When(static x => x.Operation == JobOperation.CloudFrontInvalidate);
-        RuleFor(static x => x.Paths)
-            .NotEmpty().WithMessage("パスを入力してください。")
-            .When(static x => x.Operation == JobOperation.CloudFrontInvalidate);
+            .NotEmpty().WithMessage("Compute インスタンスの OCID を入力してください。")
+            .Must(x => BeOcid(x, "instance")).WithMessage("Compute インスタンスの OCID の形式が正しくありません。")
+            .When(static x => x.Operation is JobOperation.ComputeStart or JobOperation.ComputeStop or JobOperation.ComputeReboot);
+        RuleFor(static x => x.DatabaseId)
+            .NotEmpty().WithMessage("Autonomous Database の OCID を入力してください。")
+            .Must(x => BeOcid(x, "autonomousdatabase")).WithMessage("Autonomous Database の OCID の形式が正しくありません。")
+            .When(static x => x.Operation is JobOperation.AdbStart or JobOperation.AdbStop);
+        RuleFor(static x => x.ContainerInstanceId)
+            .NotEmpty().WithMessage("Container Instance の OCID を入力してください。")
+            .Must(x => BeOcid(x, "containerinstance")).WithMessage("Container Instance の OCID の形式が正しくありません。")
+            .When(static x => x.Operation is JobOperation.ContainerInstanceStart or JobOperation.ContainerInstanceStop);
+        RuleFor(static x => x.FunctionId)
+            .NotEmpty().WithMessage("Functions の関数 OCID を入力してください。")
+            .Must(x => BeOcid(x, "fnfunc")).WithMessage("Functions の関数 OCID の形式が正しくありません。")
+            .When(static x => x.Operation == JobOperation.FunctionsInvoke);
+        RuleFor(static x => x.InvokeType)
+            .Must(static x => x is FunctionsService.InvokeTypeSync or FunctionsService.InvokeTypeDetached)
+            .WithMessage("実行タイプを選択してください。")
+            .When(static x => x.Operation == JobOperation.FunctionsInvoke);
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
@@ -65,4 +61,8 @@ public sealed class JobFormValidator : AbstractValidator<JobForm>
             return false;
         }
     }
+
+    // OCIDs look like ocid1.<type>.<realm>.[region].<id>
+    private static bool BeOcid(string value, string resourceType) =>
+        String.IsNullOrEmpty(value) || value.StartsWith($"ocid1.{resourceType}.", StringComparison.Ordinal);
 }

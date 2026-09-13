@@ -1,7 +1,5 @@
 namespace CloudManager.Host.Components.Pages;
 
-using CloudManager.Host.Infrastructure.Aws;
-
 using Microsoft.AspNetCore.Components;
 
 using MudBlazor;
@@ -12,50 +10,49 @@ public sealed partial class Home
     [
         new("コンピュート",
         [
-            new("EC2", "ec2", Icons.Material.Filled.Computer),
-            new("EBS", "ebs", Icons.Material.Filled.Album),
-            new("ECS", "ecs", Icons.Material.Filled.AccountTree),
-            new("Lambda", "lambda", Icons.Material.Filled.Functions)
+            new("Compute", "compute", Icons.Material.Filled.Computer),
+            new("Block Volume", "block-volume", Icons.Material.Filled.Album),
+            new("Container Instances", "container-instances", Icons.Material.Filled.AccountTree),
+            new("Functions", "functions", Icons.Material.Filled.Functions)
         ]),
         new("コンテナ",
         [
-            new("ECR", "ecr", Icons.Material.Filled.Inventory2)
+            new("Container Registry", "ocir", Icons.Material.Filled.Inventory2)
         ]),
         new("ストレージ / DB",
         [
-            new("S3", "s3", Icons.Material.Filled.Folder),
-            new("RDS", "rds", Icons.Material.Filled.Storage),
-            new("DynamoDB", "dynamodb", Icons.Material.Filled.TableChart)
+            new("Object Storage", "object-storage", Icons.Material.Filled.Folder),
+            new("Autonomous Database", "adb", Icons.Material.Filled.Storage),
+            new("NoSQL", "nosql", Icons.Material.Filled.TableChart)
         ]),
-        new("ネットワーク / 配信",
+        new("ネットワーク",
         [
-            new("VPC", "vpc", Icons.Material.Filled.Lan),
-            new("Elastic IP", "elastic-ip", Icons.Material.Filled.Language),
-            new("CloudFront", "cloudfront", Icons.Material.Filled.Public),
-            new("ELB", "elb", Icons.Material.Filled.Balance),
-            new("Route53", "route53", Icons.Material.Filled.Dns),
-            new("ACM", "acm", Icons.Material.Filled.Lock)
+            new("VCN", "vcn", Icons.Material.Filled.Lan),
+            new("Public IP", "public-ip", Icons.Material.Filled.Language),
+            new("Load Balancer", "load-balancer", Icons.Material.Filled.Balance),
+            new("DNS", "dns", Icons.Material.Filled.Dns),
+            new("Certificates", "certificates", Icons.Material.Filled.Lock)
         ]),
         new("API / 統合",
         [
-            new("API Gateway", "apigw", Icons.Material.Filled.Api),
-            new("EventBridge", "eventbridge", Icons.Material.Filled.EventNote)
+            new("API Gateway", "api-gateway", Icons.Material.Filled.Api),
+            new("Events", "events", Icons.Material.Filled.EventNote)
         ]),
         new("メッセージング",
         [
-            new("SQS", "sqs", Icons.Material.Filled.Mail),
-            new("SNS", "sns", Icons.Material.Filled.NotificationsActive)
+            new("Queue", "queue", Icons.Material.Filled.Mail),
+            new("Notifications", "notifications", Icons.Material.Filled.NotificationsActive)
         ]),
         new("監視",
         [
-            new("CloudWatch", "cloudwatch", Icons.Material.Filled.Timeline),
-            new("CloudWatch Logs", "cloudwatch-logs", Icons.Material.Filled.Article)
+            new("Monitoring", "monitoring", Icons.Material.Filled.Timeline),
+            new("Logging", "logging", Icons.Material.Filled.Article)
         ]),
         new("セキュリティ / ID",
         [
-            new("SSM Parameter Store", "ssm-parameters", Icons.Material.Filled.Tune),
-            new("Secrets Manager", "secrets-manager", Icons.Material.Filled.VpnKey),
-            new("Cognito", "cognito", Icons.Material.Filled.People)
+            new("Vault", "vault", Icons.Material.Filled.VpnKey),
+            new("Identity Domains", "identity-domains", Icons.Material.Filled.People),
+            new("Bastion", "bastion", Icons.Material.Filled.Terminal)
         ]),
         new("ジョブ",
         [
@@ -64,65 +61,70 @@ public sealed partial class Home
         ]),
         new("その他",
         [
-            new("Cost (USD)", "cost", Icons.Material.Filled.AttachMoney),
+            new("リソース検索", "resource-search", Icons.Material.Filled.Search),
+            new("Cost", "cost", Icons.Material.Filled.AttachMoney),
             new("設定", "settings", Icons.Material.Filled.Settings)
         ])
     ];
 
-    private int ec2Running;
+    private int computeRunning;
 
-    private int ec2Stopped;
+    private int computeStopped;
 
-    private int rdsAvailable;
+    private int adbAvailable;
 
-    private int rdsStopped;
+    private int adbStopped;
 
-    private int alarmCount;
+    private int containerActive;
 
-    private int ecsClusters;
+    private int containerInactive;
 
-    private int ecsRunningTasks;
-
-    [Inject]
-    public required AwsSession Session { get; set; }
+    private int alarmFiring;
 
     [Inject]
-    public required Ec2Service Ec2Service { get; set; }
+    public required IdentityService IdentityService { get; set; }
 
     [Inject]
-    public required RdsService RdsService { get; set; }
+    public required ResourceSearchService ResourceSearchService { get; set; }
 
     [Inject]
-    public required CloudWatchService CloudWatchService { get; set; }
+    public required MonitoringService MonitoringService { get; set; }
 
-    [Inject]
-    public required EcsService EcsService { get; set; }
+    // The tenancy root shows the whole tenancy, other compartments only themselves
+    private bool IsTenancyScope => String.Equals(Session.CompartmentId, Session.TenancyId, StringComparison.Ordinal);
+
+    private string ScopeName => IsTenancyScope ? $"{Session.CompartmentName} (テナンシ全体)" : Session.CompartmentName;
 
     protected override Task OnInitializedAsync() =>
         Session.IsProfileAvailable ? LoadAsync(LoadSummaryAsync) : Task.CompletedTask;
 
+    protected override Task OnSessionChangedAsync() =>
+        Session.IsProfileAvailable ? LoadAsync(LoadSummaryAsync) : Task.CompletedTask;
+
     private async Task LoadSummaryAsync()
     {
-        var ec2Task = Ec2Service.ListInstancesAsync(null, null, CancellationToken).AsTask();
-        var rdsTask = RdsService.ListInstancesAsync(null, CancellationToken).AsTask();
-        var alarmTask = CloudWatchService.ListAlarmsAsync().AsTask();
-        var ecsTask = EcsService.ListClustersAsync(CancellationToken).AsTask();
-        await Task.WhenAll(ec2Task, rdsTask, alarmTask, ecsTask);
+        // Resolve compartment names first so the header shows the path instead of the OCID
+        await Session.EnsureLoadedAsync(IdentityService);
 
-        var instances = await ec2Task;
-        ec2Running = instances.Count(static x => x.State == "running");
-        ec2Stopped = instances.Count(static x => x.State == "stopped");
+        var countTask = ResourceSearchService.CountByStateAsync(["instance", "autonomousdatabase", "containerinstance"], IsTenancyScope ? null : Session.CompartmentId, CancellationToken).AsTask();
+        var alarmTask = MonitoringService.ListAlarmsAsync(CancellationToken).AsTask();
+        await Task.WhenAll(countTask, alarmTask);
 
-        var databases = await rdsTask;
-        rdsAvailable = databases.Count(static x => x.Status == "available");
-        rdsStopped = databases.Count(static x => x.Status == "stopped");
+        var counts = await countTask;
+        computeRunning = Count(counts, "Instance", "RUNNING");
+        computeStopped = Count(counts, "Instance", "STOPPED");
+        adbAvailable = Count(counts, "AutonomousDatabase", "AVAILABLE");
+        adbStopped = Count(counts, "AutonomousDatabase", "STOPPED");
+        containerActive = Count(counts, "ContainerInstance", "ACTIVE");
+        containerInactive = Count(counts, "ContainerInstance", "INACTIVE");
 
-        alarmCount = (await alarmTask).Count(static x => x.StateValue == "ALARM");
-
-        var clusters = await ecsTask;
-        ecsClusters = clusters.Count;
-        ecsRunningTasks = clusters.Sum(static x => x.RunningTasksCount);
+        alarmFiring = (await alarmTask).Count(static x => x.Status == "FIRING");
     }
+
+    private static int Count(List<ResourceStateCount> counts, string resourceType, string state) =>
+        counts
+            .Where(x => String.Equals(x.ResourceType, resourceType, StringComparison.OrdinalIgnoreCase) && (x.State == state))
+            .Sum(static x => x.Count);
 
     private sealed record ServiceCategory(string Name, ServiceItem[] Items);
 

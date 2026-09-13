@@ -24,31 +24,26 @@
 
                 @switch (Form.Operation)
                 {
-                    case JobOperation.Ec2Start:
-                    case JobOperation.Ec2Stop:
-                    case JobOperation.Ec2Reboot:
-                        <MudTextField @bind-Value="Form.InstanceId" For="@(() => Form.InstanceId)" Validation="@Validator.ValidateValue" Label="EC2 インスタンス ID" Immediate="true" />
+                    case JobOperation.ComputeStart:
+                    case JobOperation.ComputeStop:
+                    case JobOperation.ComputeReboot:
+                        <MudTextField @bind-Value="Form.InstanceId" For="@(() => Form.InstanceId)" Validation="@Validator.ValidateValue" Label="Compute インスタンス OCID" Immediate="true" />
                         break;
-                    case JobOperation.RdsStart:
-                    case JobOperation.RdsStop:
-                        <MudTextField @bind-Value="Form.DbInstanceId" For="@(() => Form.DbInstanceId)" Validation="@Validator.ValidateValue" Label="RDS DB インスタンス ID" Immediate="true" />
+                    case JobOperation.AdbStart:
+                    case JobOperation.AdbStop:
+                        <MudTextField @bind-Value="Form.DatabaseId" For="@(() => Form.DatabaseId)" Validation="@Validator.ValidateValue" Label="Autonomous Database OCID" Immediate="true" />
                         break;
-                    case JobOperation.EcsUpdateDesiredCount:
-                        <MudTextField @bind-Value="Form.Cluster" For="@(() => Form.Cluster)" Validation="@Validator.ValidateValue" Label="ECS クラスター名" Immediate="true" />
-                        <MudTextField @bind-Value="Form.ServiceName" For="@(() => Form.ServiceName)" Validation="@Validator.ValidateValue" Label="ECS サービス名" Immediate="true" />
-                        <MudNumericField @bind-Value="Form.DesiredCount" For="@(() => Form.DesiredCount)" Validation="@Validator.ValidateValue" Label="希望タスク数" Min="0" />
+                    case JobOperation.ContainerInstanceStart:
+                    case JobOperation.ContainerInstanceStop:
+                        <MudTextField @bind-Value="Form.ContainerInstanceId" For="@(() => Form.ContainerInstanceId)" Validation="@Validator.ValidateValue" Label="Container Instance OCID" Immediate="true" />
                         break;
-                    case JobOperation.LambdaInvoke:
-                        <MudTextField @bind-Value="Form.FunctionName" For="@(() => Form.FunctionName)" Validation="@Validator.ValidateValue" Label="Lambda 関数名" Immediate="true" />
+                    case JobOperation.FunctionsInvoke:
+                        <MudTextField @bind-Value="Form.FunctionId" For="@(() => Form.FunctionId)" Validation="@Validator.ValidateValue" Label="関数 OCID" Immediate="true" />
                         <MudTextField @bind-Value="Form.Payload" For="@(() => Form.Payload)" Label="ペイロード (JSON)" Lines="3" />
-                        <MudSelect T="string" @bind-Value="Form.InvocationType" Label="実行タイプ">
-                            <MudSelectItem Value="@("Event")">Event (非同期)</MudSelectItem>
-                            <MudSelectItem Value="@("RequestResponse")">RequestResponse (同期)</MudSelectItem>
+                        <MudSelect T="string" @bind-Value="Form.InvokeType" Label="実行タイプ">
+                            <MudSelectItem Value="@FunctionsService.InvokeTypeDetached">Detached (非同期)</MudSelectItem>
+                            <MudSelectItem Value="@FunctionsService.InvokeTypeSync">Sync (同期)</MudSelectItem>
                         </MudSelect>
-                        break;
-                    case JobOperation.CloudFrontInvalidate:
-                        <MudTextField @bind-Value="Form.DistributionId" For="@(() => Form.DistributionId)" Validation="@Validator.ValidateValue" Label="ディストリビューション ID" Immediate="true" />
-                        <MudTextField @bind-Value="Form.Paths" For="@(() => Form.Paths)" Validation="@Validator.ValidateValue" Label="パス (例: /*)" Immediate="true" />
                         break;
                 }
 

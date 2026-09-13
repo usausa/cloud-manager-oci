@@ -1,7 +1,6 @@
 namespace CloudManager.Host.Components.Pages;
 
 using CloudManager.Host.Components.Dialogs;
-using CloudManager.Host.Infrastructure.Aws;
 using CloudManager.Host.Infrastructure.Components;
 using CloudManager.Host.Infrastructure.Jobs;
 using CloudManager.Host.Models.Forms;
@@ -17,9 +16,6 @@ public sealed partial class JobsPage
     private static readonly DialogOptions EditDialogOptions = new() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true };
 
     private List<JobRow> rows = [];
-
-    [Inject]
-    public required AwsSession Session { get; set; }
 
     [Inject]
     public required JobService JobService { get; set; }
@@ -44,7 +40,7 @@ public sealed partial class JobsPage
         var form = await ShowEditDialog("ジョブ追加", new JobForm
         {
             ProfileName = Session.ProfileName,
-            RegionName = Session.Region?.SystemName ?? string.Empty
+            RegionName = Session.Region?.RegionId ?? string.Empty
         });
         if (form is null)
         {
@@ -143,25 +139,19 @@ public sealed partial class JobsPage
     {
         switch (job.Parameters)
         {
-            case Ec2InstanceParameters p:
+            case ComputeInstanceParameters p:
                 form.InstanceId = p.InstanceId;
                 break;
-            case RdsInstanceParameters p:
-                form.DbInstanceId = p.DbInstanceId;
+            case AutonomousDatabaseParameters p:
+                form.DatabaseId = p.DatabaseId;
                 break;
-            case EcsDesiredCountParameters p:
-                form.Cluster = p.Cluster;
-                form.ServiceName = p.ServiceName;
-                form.DesiredCount = p.DesiredCount;
+            case ContainerInstanceParameters p:
+                form.ContainerInstanceId = p.ContainerInstanceId;
                 break;
-            case LambdaInvokeParameters p:
-                form.FunctionName = p.FunctionName;
+            case FunctionsInvokeParameters p:
+                form.FunctionId = p.FunctionId;
                 form.Payload = p.Payload;
-                form.InvocationType = p.InvocationType;
-                break;
-            case CloudFrontInvalidateParameters p:
-                form.DistributionId = p.DistributionId;
-                form.Paths = p.Paths;
+                form.InvokeType = p.InvokeType;
                 break;
         }
     }
@@ -183,11 +173,10 @@ public sealed partial class JobsPage
 
     private static JobParameters ToParameters(JobForm form) => form.Operation switch
     {
-        JobOperation.Ec2Start or JobOperation.Ec2Stop or JobOperation.Ec2Reboot => new Ec2InstanceParameters(form.InstanceId),
-        JobOperation.RdsStart or JobOperation.RdsStop => new RdsInstanceParameters(form.DbInstanceId),
-        JobOperation.EcsUpdateDesiredCount => new EcsDesiredCountParameters(form.Cluster, form.ServiceName, form.DesiredCount),
-        JobOperation.LambdaInvoke => new LambdaInvokeParameters(form.FunctionName, String.IsNullOrWhiteSpace(form.Payload) ? null : form.Payload, form.InvocationType),
-        JobOperation.CloudFrontInvalidate => new CloudFrontInvalidateParameters(form.DistributionId, form.Paths),
+        JobOperation.ComputeStart or JobOperation.ComputeStop or JobOperation.ComputeReboot => new ComputeInstanceParameters(form.InstanceId),
+        JobOperation.AdbStart or JobOperation.AdbStop => new AutonomousDatabaseParameters(form.DatabaseId),
+        JobOperation.ContainerInstanceStart or JobOperation.ContainerInstanceStop => new ContainerInstanceParameters(form.ContainerInstanceId),
+        JobOperation.FunctionsInvoke => new FunctionsInvokeParameters(form.FunctionId, String.IsNullOrWhiteSpace(form.Payload) ? null : form.Payload, form.InvokeType),
         _ => throw new InvalidOperationException($"Unsupported operation. operation=[{form.Operation}]")
     };
 

@@ -1,41 +1,67 @@
 namespace CloudManager.Host.Components.Pages;
 
-using Amazon;
-
-using CloudManager.Host.Infrastructure.Aws;
 using CloudManager.Host.Infrastructure.Components;
 
 using Microsoft.AspNetCore.Components;
 
 public sealed partial class SettingsPage
 {
-#pragma warning disable IDE0028
-    private static readonly IReadOnlyList<string> Regions = RegionEndpoint.EnumerableAllRegions
-        .Where(static x => x.PartitionName == "aws")
-        .Select(static x => x.SystemName)
-        .Order(StringComparer.Ordinal)
-        .ToList();
-#pragma warning restore IDE0028
-
     private string selectedProfile = string.Empty;
 
     private string selectedRegion = string.Empty;
 
+    private string selectedCompartment = string.Empty;
+
     [Inject]
-    public required AwsSession Session { get; set; }
+    public required IdentityService IdentityService { get; set; }
+
+    // Subscribed regions once loaded, otherwise the current region only
+    private IReadOnlyList<string> Regions =>
+        Session.AvailableRegions.Count > 0
+            ? Session.AvailableRegions
+            : String.IsNullOrEmpty(selectedRegion) ? [] : [selectedRegion];
 
     protected override void OnInitialized()
     {
-        selectedProfile = Session.ProfileName;
-        selectedRegion = Session.Region?.SystemName ?? string.Empty;
+        base.OnInitialized();
+        SyncSelection();
     }
+
+    protected override Task OnInitializedAsync() => LoadCompartmentsAsync();
+
+    protected override Task OnSessionChangedAsync()
+    {
+        SyncSelection();
+        return LoadCompartmentsAsync();
+    }
+
+    private void SyncSelection()
+    {
+        selectedProfile = Session.ProfileName;
+        selectedRegion = Session.Region?.RegionId ?? string.Empty;
+        selectedCompartment = Session.CompartmentId;
+    }
+
+    private Task LoadCompartmentsAsync() =>
+        Session.IsProfileAvailable ? LoadAsync(() => Session.EnsureLoadedAsync(IdentityService)) : Task.CompletedTask;
 
     private void Apply()
     {
         ErrorMessage = null;
         try
         {
-            Session.SetProfile(selectedProfile, selectedRegion);
+            var profileChanged = !String.Equals(selectedProfile, Session.ProfileName, StringComparison.Ordinal);
+            var regionChanged = !String.Equals(selectedRegion, Session.Region?.RegionId, StringComparison.Ordinal);
+            if (profileChanged || regionChanged)
+            {
+                // Switching the profile resets the compartment to the tenancy root
+                Session.SetProfile(selectedProfile, selectedRegion);
+            }
+            else if (!String.IsNullOrEmpty(selectedCompartment))
+            {
+                Session.SetCompartment(selectedCompartment);
+            }
+
             Snackbar.AddSuccess("設定を適用しました。");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 
 using MudBlazor;
 
-// Shows CloudWatch metrics as a line chart
+// Shows Monitoring metrics as a line chart
 public sealed partial class MetricsChart
 {
     private readonly LineChartOptions chartOptions = new() { YAxisTicks = 5 };

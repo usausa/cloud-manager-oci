@@ -67,33 +67,4 @@ public sealed class HostTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Empty(content);
     }
-
-    [Fact]
-    public async Task S3DownloadWithoutKeyReturnsBadRequest()
-    {
-        // Arrange
-        var client = factory.CreateClient();
-
-        // Act
-        var response = await client.GetAsync(new Uri("/api/s3/download/bucket?profile=cloudmanager-test", UriKind.Relative), TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    // An unknown profile returns ProblemDetails without calling AWS
-    [Fact]
-    public async Task S3DownloadWithUnknownProfileReturnsProblem()
-    {
-        // Arrange
-        var client = factory.CreateClient();
-
-        // Act
-        var response = await client.GetAsync(new Uri("/api/s3/download/bucket?key=file.txt&profile=cloudmanager-test&region=ap-northeast-1", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Contains("cloudmanager-test", content, StringComparison.Ordinal);
-    }
 }
