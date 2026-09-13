@@ -1,0 +1,49 @@
+@page "/certificates"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Certificates</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Certificates</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="CertificateInfo" Items="certificates" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>名前</MudTh>
+        <MudTh>コモンネーム</MudTh>
+        <MudTh>種類</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>有効期限</MudTh>
+        <MudTh>残り日数</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><span title="@context.Id">@context.Name</span></MudTd>
+        <MudTd>@(context.CommonName ?? "-")</MudTd>
+        <MudTd>@context.ConfigType</MudTd>
+        <MudTd>@context.State</MudTd>
+        <MudTd>@DisplayFormat.Time(context.NotAfter)</MudTd>
+        <MudTd>
+            @if (context.DaysToExpiry.HasValue)
+            {
+                <MudChip T="string" Size="Size.Small" Color="@ExpiryColor(context.DaysToExpiry.Value)">@context.DaysToExpiry 日</MudChip>
+            }
+            else
+            {
+                <span>-</span>
+            }
+        </MudTd>
+        <MudTd>
+            <MudTooltip Text="詳細">
+                <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" OnClick="() => ShowDetailAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

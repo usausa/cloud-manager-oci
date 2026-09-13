@@ -1,0 +1,51 @@
+@page "/public-ip"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Public IP</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">予約済みパブリック IP</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="PublicIpInfo" Items="addresses" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>名前</MudTh>
+        <MudTh>IP アドレス</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>割当先</MudTh>
+        <MudTh>作成日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <MudTd>@context.IpAddress</MudTd>
+        <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ASSIGNED" ? Color.Primary : Color.Default)">@context.State</MudChip></MudTd>
+        <MudTd><span title="@context.AssignedEntityId">@(context.AssignedEntityId is null ? "-" : $"{context.AssignedEntityType} {DisplayFormat.Ocid(context.AssignedEntityId)}")</span></MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            @if (context.AssignedEntityId is null)
+            {
+                <MudTooltip Text="インスタンスへ割当">
+                    <MudIconButton Icon="@Icons.Material.Filled.Link" Size="Size.Small"
+                                   Disabled="IsRunning" OnClick="() => AssignAsync(context)" />
+                </MudTooltip>
+            }
+            else
+            {
+                <MudTooltip Text="割当解除">
+                    <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small"
+                                   Disabled="IsRunning" OnClick="() => UnassignAsync(context)" />
+                </MudTooltip>
+            }
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

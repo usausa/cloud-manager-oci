@@ -1,0 +1,58 @@
+@page "/queue"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Queue</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Queue</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="QueueInfo" Items="queues" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="25">
+    <ToolBarContent>
+        <MudTextField @bind-Value="searchText" Placeholder="検索" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                      Immediate="true" Clearable="true" Margin="Margin.Dense" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>キュー名</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>メッセージ数</MudTh>
+        <MudTh>処理中</MudTh>
+        <MudTh>可視性 (秒)</MudTh>
+        <MudTh>保持 (秒)</MudTh>
+        <MudTh>作成日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <MudTd><MudChip T="string" Size="Size.Small" Color="@StateColor(context.State)">@context.State</MudChip></MudTd>
+        <MudTd>@(context.VisibleMessages?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.InFlightMessages?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.VisibilityInSeconds?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.RetentionInSeconds?.ToString() ?? "-")</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="メッセージ送信">
+                <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small"
+                               Disabled="@(IsRunning || !IsActive(context))" OnClick="() => SendMessageAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="メッセージ受信">
+                <MudIconButton Icon="@Icons.Material.Filled.Inbox" Size="Size.Small"
+                               Disabled="@(IsRunning || !IsActive(context))" OnClick="() => ReceiveMessagesAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="パージ">
+                <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Size="Size.Small" Color="Color.Warning"
+                               Disabled="@(IsRunning || !IsActive(context))" OnClick="() => PurgeAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

@@ -1,0 +1,36 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>証明書の詳細 - @CertificateName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (detail is not null)
+        {
+            <MudSimpleTable Dense="true" Bordered="true" Class="detail-table">
+                <tbody>
+                    <tr><td>OCID</td><td class="break-all">@detail.Id</td></tr>
+                    <tr><td>説明</td><td>@(detail.Description ?? "-")</td></tr>
+                    <tr><td>コモンネーム</td><td>@(detail.CommonName ?? "-")</td></tr>
+                    <tr><td>SAN</td><td>@(detail.SubjectAlternativeNames.Count == 0 ? "-" : String.Join(", ", detail.SubjectAlternativeNames))</td></tr>
+                    <tr><td>種類</td><td>@detail.ConfigType</td></tr>
+                    <tr><td>発行 CA</td><td class="break-all">@(detail.IssuerCaId ?? "-")</td></tr>
+                    <tr><td>鍵アルゴリズム</td><td>@detail.KeyAlgorithm</td></tr>
+                    <tr><td>署名アルゴリズム</td><td>@detail.SignatureAlgorithm</td></tr>
+                    <tr><td>バージョン</td><td>@(detail.VersionNumber?.ToString() ?? "-") (@String.Join(", ", detail.Stages))</td></tr>
+                    <tr><td>シリアル番号</td><td>@(detail.SerialNumber ?? "-")</td></tr>
+                    <tr><td>有効期間</td><td>@DisplayFormat.Time(detail.NotBefore) ～ @DisplayFormat.Time(detail.NotAfter)</td></tr>
+                </tbody>
+            </MudSimpleTable>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

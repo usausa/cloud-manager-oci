@@ -1,0 +1,82 @@
+@page "/events"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Events</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Events</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="EventRuleInfo" Items="rules" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="25">
+    <ToolBarContent>
+        <MudTextField @bind-Value="searchText" Placeholder="検索" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                      Immediate="true" Clearable="true" Margin="Margin.Dense" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>ルール名</MudTh>
+        <MudTh>有効</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>条件</MudTh>
+        <MudTh>アクション</MudTh>
+        <MudTh>作成日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <span title="@context.Id">@context.DisplayName</span>
+            @if (!String.IsNullOrEmpty(context.Description))
+            {
+                <MudText Typo="Typo.caption" Class="d-block">@context.Description</MudText>
+            }
+        </MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@(context.IsEnabled ? Color.Success : Color.Default)">
+                @(context.IsEnabled ? "有効" : "無効")
+            </MudChip>
+        </MudTd>
+        <MudTd>@context.State</MudTd>
+        <MudTd><MudText Typo="Typo.body2" Class="target-text">@context.Condition</MudText></MudTd>
+        <MudTd>
+            @if (context.Actions.Count == 0)
+            {
+                <span>-</span>
+            }
+            else
+            {
+                @foreach (var action in context.Actions)
+                {
+                    <MudText Typo="Typo.body2" Class="break-all">@action</MudText>
+                }
+            }
+        </MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            @if (context.IsEnabled)
+            {
+                <MudTooltip Text="無効化">
+                    <MudIconButton Icon="@Icons.Material.Filled.PauseCircle" Size="Size.Small"
+                                   Color="Color.Warning" Disabled="IsRunning"
+                                   OnClick="() => DisableAsync(context)" />
+                </MudTooltip>
+            }
+            else
+            {
+                <MudTooltip Text="有効化">
+                    <MudIconButton Icon="@Icons.Material.Filled.PlayCircle" Size="Size.Small"
+                                   Color="Color.Success" Disabled="IsRunning"
+                                   OnClick="() => EnableAsync(context)" />
+                </MudTooltip>
+            }
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

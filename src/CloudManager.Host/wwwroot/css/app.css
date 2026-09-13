@@ -81,6 +81,11 @@ td.mud-table-cell:has(.mud-tooltip-root) {
     word-break: break-all;
 }
 
+/* Detail tables: keep the label column on one line */
+.detail-table td:first-child {
+    white-space: nowrap;
+}
+
 .log-text {
     white-space: pre-wrap;
     word-break: break-all;

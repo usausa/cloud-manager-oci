@@ -1,0 +1,11 @@
+<MudDialog>
+    <TitleContent>パブリック IP 割当 - @IpAddress</TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-2">インスタンスのプライマリ VNIC のプライマリプライベート IP に割り当てます。</MudText>
+        <MudTextField @bind-Value="instanceId" Label="インスタンス OCID" Required="true" FullWidth="true" AutoFocus="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!IsValid)">割当</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,37 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent><MudText Typo="Typo.h6">受信メッセージ - @QueueName (@messages.Count 件)</MudText></TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.caption" Class="d-block mb-2">
+            受信したメッセージは可視性タイムアウトの間だけ非表示になります。削除しない限りキューに残ります。
+        </MudText>
+        @if (messages.Count == 0)
+        {
+            <MudText>メッセージはありません。</MudText>
+        }
+        @foreach (var message in messages)
+        {
+            <MudPaper Class="pa-2 mb-2" Outlined="true">
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        ID: @message.Id / 配信回数: @message.DeliveryCount / 期限: @DisplayFormat.Time(message.ExpireAfter)
+                    </MudText>
+                    <MudSpacer />
+                    <MudTooltip Text="削除">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                       Disabled="IsRunning" OnClick="() => DeleteAsync(message)" />
+                    </MudTooltip>
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="pre-wrap break-all">@message.Content</MudText>
+            </MudPaper>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Filled" Color="Color.Primary">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

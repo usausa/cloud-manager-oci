@@ -1,0 +1,169 @@
+@page "/vcn"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - VCN</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">VCN</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTabs Outlined="true" Class="mt-1">
+    <MudTabPanel Text="VCN">
+        <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">行を選択するとサブネット、ルート表、セキュリティリスト、NSG、ゲートウェイを表示します。</MudText>
+        <MudTable T="VcnInfo" Items="vcns" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@IsLoading"
+                  SelectedItem="selectedVcn" SelectedItemChanged="OnVcnSelectedAsync">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>CIDR</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>DNS ラベル</MudTh>
+                <MudTh>作成日時</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@context.CidrBlocks</MudTd>
+                <MudTd>@context.State</MudTd>
+                <MudTd>@(context.DnsLabel ?? "-")</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudTabPanel>
+
+    <MudTabPanel Text="サブネット">
+        <MudTable T="SubnetInfo" Items="subnets" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading" RowsPerPage="50">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>CIDR</MudTh>
+                <MudTh>AD</MudTh>
+                <MudTh>種類</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@context.CidrBlock</MudTd>
+                <MudTd>@(context.AvailabilityDomain ?? "リージョナル")</MudTd>
+                <MudTd>@(context.IsPublic ? "パブリック" : "プライベート")</MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+            <NoRecordsContent>
+                <MudText>@(selectedVcn is null ? "VCN を選択してください。" : "サブネットがありません。")</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudTabPanel>
+
+    <MudTabPanel Text="ルート表">
+        <MudTable T="RouteTableInfo" Items="routeTables" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading" RowsPerPage="50">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>既定</MudTh>
+                <MudTh>ルール数</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@(context.IsDefault ? "Yes" : "No")</MudTd>
+                <MudTd>@context.RuleCount</MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+            <NoRecordsContent>
+                <MudText>@(selectedVcn is null ? "VCN を選択してください。" : "ルート表がありません。")</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudTabPanel>
+
+    <MudTabPanel Text="セキュリティリスト">
+        <MudTable T="SecurityListInfo" Items="securityLists" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading" RowsPerPage="50">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>既定</MudTh>
+                <MudTh>イングレス</MudTh>
+                <MudTh>エグレス</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@(context.IsDefault ? "Yes" : "No")</MudTd>
+                <MudTd>@context.IngressCount</MudTd>
+                <MudTd>@context.EgressCount</MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+            <NoRecordsContent>
+                <MudText>@(selectedVcn is null ? "VCN を選択してください。" : "セキュリティリストがありません。")</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudTabPanel>
+
+    <MudTabPanel Text="NSG">
+        <MudTable T="NetworkSecurityGroupInfo" Items="networkSecurityGroups" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading" RowsPerPage="50">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>OCID</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.DisplayName</MudTd>
+                <MudTd><span title="@context.Id">@DisplayFormat.Ocid(context.Id)</span></MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+            <NoRecordsContent>
+                <MudText>@(selectedVcn is null ? "VCN を選択してください。" : "NSG がありません。")</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudTabPanel>
+
+    <MudTabPanel Text="ゲートウェイ">
+        <MudText Typo="Typo.subtitle2" Class="mt-1">インターネットゲートウェイ</MudText>
+        <MudTable T="InternetGatewayInfo" Items="internetGateways" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>有効</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@(context.IsEnabled ? "Yes" : "No")</MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <NoRecordsContent><MudText>なし</MudText></NoRecordsContent>
+        </MudTable>
+        <MudText Typo="Typo.subtitle2" Class="mt-2">NAT ゲートウェイ</MudText>
+        <MudTable T="NatGatewayInfo" Items="natGateways" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>NAT IP</MudTh>
+                <MudTh>トラフィック遮断</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@(context.NatIp ?? "-")</MudTd>
+                <MudTd>@(context.BlockTraffic ? "Yes" : "No")</MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <NoRecordsContent><MudText>なし</MudText></NoRecordsContent>
+        </MudTable>
+        <MudText Typo="Typo.subtitle2" Class="mt-2">サービスゲートウェイ</MudText>
+        <MudTable T="ServiceGatewayInfo" Items="serviceGateways" Dense="true" Hover="true" Bordered="true" Striped="true" Loading="@isDetailLoading">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>サービス</MudTh>
+                <MudTh>状態</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@context.Services</MudTd>
+                <MudTd>@context.State</MudTd>
+            </RowTemplate>
+            <NoRecordsContent><MudText>なし</MudText></NoRecordsContent>
+        </MudTable>
+    </MudTabPanel>
+</MudTabs>

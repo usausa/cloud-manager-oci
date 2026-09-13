@@ -1,0 +1,43 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>バックエンドヘルス - @BackendSetName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (backends.Count == 0)
+        {
+            <MudText>バックエンドがありません。</MudText>
+        }
+        else
+        {
+            <MudTable T="BackendHealthInfo" Items="backends" Dense="true" Hover="true" Bordered="true">
+                <HeaderContent>
+                    <MudTh>名前</MudTh>
+                    <MudTh>IP</MudTh>
+                    <MudTh>ポート</MudTh>
+                    <MudTh>ヘルス</MudTh>
+                    <MudTh>重み</MudTh>
+                    <MudTh>フラグ</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Name</MudTd>
+                    <MudTd>@context.IpAddress</MudTd>
+                    <MudTd>@context.Port</MudTd>
+                    <MudTd><MudChip T="string" Size="Size.Small" Color="@HealthColor(context.Status)">@context.Status</MudChip></MudTd>
+                    <MudTd>@context.Weight</MudTd>
+                    <MudTd>@Flags(context)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

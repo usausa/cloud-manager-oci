@@ -1,0 +1,71 @@
+@page "/notifications"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Notifications</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Notifications</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudStack Spacing="3">
+    <div>
+        <MudText Typo="Typo.subtitle2" Class="mb-1">トピック一覧</MudText>
+        <MudTable T="TopicInfo" Items="topics" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" SelectedItem="selectedTopic" SelectedItemChanged="OnTopicSelectedAsync" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>トピック名</MudTh>
+                <MudTh>説明</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>サブスクリプション数</MudTh>
+                <MudTh>作成日時</MudTh>
+                <MudTh>操作</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Class="@(context == selectedTopic ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.TopicId">@context.Name</span></MudText>
+                </MudTd>
+                <MudTd>@(context.Description ?? "-")</MudTd>
+                <MudTd>@context.State</MudTd>
+                <MudTd>@context.SubscriptionCount</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd>
+                    <MudTooltip Text="メッセージ発行">
+                        <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small"
+                                       Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => PublishAsync(context)" />
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </div>
+    @if (selectedTopic is not null)
+    {
+        <div>
+            <MudText Typo="Typo.subtitle2" Class="mb-1">サブスクリプション: @selectedTopic.Name</MudText>
+            <MudTable T="SubscriptionInfo" Items="subscriptions" Dense="true" Hover="true" Bordered="true" Striped="true"
+                      Loading="@isSubscriptionsLoading" RowsPerPage="20">
+                <HeaderContent>
+                    <MudTh>プロトコル</MudTh>
+                    <MudTh>エンドポイント</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>作成日時</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Protocol</MudTd>
+                    <MudTd class="break-all"><span title="@context.Id">@context.Endpoint</span></MudTd>
+                    <MudTd>@context.State</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.CreatedTime)</MudTd>
+                </RowTemplate>
+                <PagerContent><MudTablePager /></PagerContent>
+                <NoRecordsContent><MudText>サブスクリプションがありません。</MudText></NoRecordsContent>
+            </MudTable>
+        </div>
+    }
+</MudStack>

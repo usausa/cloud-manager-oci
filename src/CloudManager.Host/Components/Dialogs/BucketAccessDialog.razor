@@ -10,7 +10,7 @@
         else if (access is not null)
         {
             <MudAlert Severity="@(access.PublicAccessType == "NoPublicAccess" ? Severity.Success : Severity.Warning)" Class="mb-2">@access.Verdict</MudAlert>
-            <MudSimpleTable Dense="true" Bordered="true">
+            <MudSimpleTable Dense="true" Bordered="true" Class="detail-table">
                 <tbody>
                     <tr><td>パブリックアクセス</td><td>@access.PublicAccessType</td></tr>
                     <tr><td>バージョニング</td><td>@access.Versioning</td></tr>

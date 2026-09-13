@@ -1,0 +1,64 @@
+@page "/api-gateway"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - API Gateway</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">API Gateway</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudStack Spacing="3">
+    <div>
+        <MudText Typo="Typo.subtitle2" Class="mb-1">ゲートウェイ</MudText>
+        <MudTable T="ApiGatewayInfo" Items="gateways" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" SelectedItem="selectedGateway" SelectedItemChanged="OnGatewaySelectedAsync" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>種類</MudTh>
+                <MudTh>ホスト名</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>作成日時</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Class="@(context == selectedGateway ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.DisplayName</span></MudText>
+                </MudTd>
+                <MudTd>@context.EndpointType</MudTd>
+                <MudTd>@(context.Hostname ?? "-")</MudTd>
+                <MudTd>@context.State</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </div>
+    @if (selectedGateway is not null)
+    {
+        <div>
+            <MudText Typo="Typo.subtitle2" Class="mb-1">デプロイメント: @selectedGateway.DisplayName</MudText>
+            <MudTable T="ApiDeploymentInfo" Items="deployments" Dense="true" Hover="true" Bordered="true" Striped="true"
+                      Loading="@isDetailLoading" RowsPerPage="25">
+                <HeaderContent>
+                    <MudTh>名前</MudTh>
+                    <MudTh>パスプレフィックス</MudTh>
+                    <MudTh>エンドポイント</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>更新日時</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                    <MudTd>@context.PathPrefix</MudTd>
+                    <MudTd class="break-all">@(context.Endpoint ?? "-")</MudTd>
+                    <MudTd>@context.State</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.TimeUpdated)</MudTd>
+                </RowTemplate>
+                <PagerContent><MudTablePager /></PagerContent>
+                <NoRecordsContent><MudText>デプロイメントがありません。</MudText></NoRecordsContent>
+            </MudTable>
+        </div>
+    }
+</MudStack>
