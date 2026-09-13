@@ -1,7 +1,7 @@
 @page "/object-storage"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Object Storage</PageTitle>
+<PageTitle>CloudManager OCI - Object Storage</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
     <MudText Typo="Typo.h5">Object Storage バケット</MudText>
@@ -16,12 +16,14 @@
 <MudTable T="BucketInfo" Items="buckets" Dense="true" Hover="true" Loading="@IsLoading" RowsPerPage="50">
     <HeaderContent>
         <MudTh>バケット名</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>作成者</MudTh>
         <MudTh>作成日</MudTh>
         <MudTh>操作</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.Name</MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd>@(context.CreatedBy ?? "-")</MudTd>
         <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
         <MudTd>

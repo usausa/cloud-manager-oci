@@ -14,14 +14,16 @@ public sealed class CertificatesService
         this.factory = factory;
     }
 
-    // Lists the certificates of the compartment
+    // Lists the certificates of the compartments in scope
     public async ValueTask<List<CertificateInfo>> ListCertificatesAsync(CancellationToken cancellationToken = default)
     {
         using var certificates = factory.CreateCertificatesManagementClient();
-        var items = await OciPaging.ListAllAsync(
-            page => certificates.ListCertificates(new ListCertificatesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.CertificateCollection.Items,
-            static x => x.OpcNextPage);
+        var items = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => certificates.ListCertificates(new ListCertificatesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.CertificateCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
         var now = DateTime.UtcNow;
 #pragma warning disable IDE0028
@@ -31,6 +33,7 @@ public sealed class CertificatesService
                 var notAfter = x.CurrentVersionSummary?.Validity?.TimeOfValidityNotAfter;
                 return new CertificateInfo(
                     x.Id,
+                    x.CompartmentId,
                     x.Name,
                     OciValues.State(x.LifecycleState),
                     OciValues.State(x.ConfigType),

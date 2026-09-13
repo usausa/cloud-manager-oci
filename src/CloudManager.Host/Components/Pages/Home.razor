@@ -1,7 +1,7 @@
 @page "/"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - ダッシュボード</PageTitle>
+<PageTitle>CloudManager OCI - ダッシュボード</PageTitle>
 
 <MudText Typo="Typo.h5" Class="mb-2">ダッシュボード</MudText>
 
@@ -78,6 +78,36 @@ else
                     <MudText Typo="Typo.subtitle2">アラーム発報中</MudText>
                     <MudText Typo="Typo.h4" Color="@(alarmFiring > 0 ? Color.Error : Color.Default)">@alarmFiring</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">FIRING 状態</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-3">
+                @if (IsLoading)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" />
+                }
+                else
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                        <div>
+                            <MudText Typo="Typo.subtitle2">今月のコスト (@CurrentMonthLabel / @(IsTenancyScope ? "テナンシ全体" : "現在のコンパートメント"))</MudText>
+                            <MudText Typo="Typo.h4" Color="Color.Primary" Class="nowrap">
+                                @FormatAmount(costCurrentMonth)
+                                <MudText Typo="Typo.subtitle1" Inline="true">@costCurrency</MudText>
+                            </MudText>
+                            @if (costError is not null)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Error">@costError</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">先月 (@PreviousMonthLabel): @FormatAmount(costPreviousMonth) @costCurrency</MudText>
+                            }
+                        </div>
+                        <MudSpacer />
+                        <MudButton Href="cost" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.ArrowForward">詳細</MudButton>
+                    </MudStack>
                 }
             </MudPaper>
         </MudItem>

@@ -156,6 +156,7 @@ public sealed partial class AutonomousDatabasePage
     {
         await DialogService.ShowAsync<WorkRequestsDialog>("作業リクエスト", new DialogParameters<WorkRequestsDialog>
         {
+            { x => x.CompartmentId, database.CompartmentId },
             { x => x.ResourceId, database.Id },
             { x => x.ResourceName, database.DisplayName }
         });

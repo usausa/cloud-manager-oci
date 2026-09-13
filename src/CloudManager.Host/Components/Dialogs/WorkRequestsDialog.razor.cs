@@ -12,6 +12,9 @@ public sealed partial class WorkRequestsDialog
     public required IMudDialogInstance MudDialog { get; set; }
 
     [Parameter]
+    public string CompartmentId { get; set; } = string.Empty;
+
+    [Parameter]
     public string ResourceId { get; set; } = string.Empty;
 
     [Parameter]
@@ -23,6 +26,6 @@ public sealed partial class WorkRequestsDialog
     protected override Task OnInitializedAsync() =>
         LoadAsync(async () =>
         {
-            requests = await Service.ListWorkRequestsAsync(ResourceId, CancellationToken);
+            requests = await Service.ListWorkRequestsAsync(CompartmentId, ResourceId, CancellationToken);
         });
 }

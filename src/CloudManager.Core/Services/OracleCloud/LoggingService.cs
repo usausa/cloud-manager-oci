@@ -22,18 +22,20 @@ public sealed class LoggingService
         this.factory = factory;
     }
 
-    // Lists the log groups of the compartment
+    // Lists the log groups of the compartments in scope
     public async ValueTask<List<LogGroupInfo>> ListLogGroupsAsync(CancellationToken cancellationToken = default)
     {
         using var logging = factory.CreateLoggingManagementClient();
-        var groups = await OciPaging.ListAllAsync(
-            page => logging.ListLogGroups(new ListLogGroupsRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var groups = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => logging.ListLogGroups(new ListLogGroupsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return groups
-            .Select(static x => new LogGroupInfo(x.Id, x.DisplayName, x.Description, OciValues.State(x.LifecycleState), x.TimeCreated))
+            .Select(static x => new LogGroupInfo(x.Id, x.CompartmentId, x.DisplayName, x.Description, OciValues.State(x.LifecycleState), x.TimeCreated))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
 #pragma warning restore IDE0028
@@ -63,11 +65,11 @@ public sealed class LoggingService
 #pragma warning restore IDE0028
     }
 
-    // Default query for a log group or a single log
-    public string BuildQuery(string logGroupId, string? logId) =>
+    // Default query for a log group or a single log; the path starts with the compartment of the group
+    public static string BuildQuery(string compartmentId, string logGroupId, string? logId) =>
         String.IsNullOrEmpty(logId)
-            ? $"search \"{factory.CompartmentId}/{logGroupId}\" | sort by datetime desc"
-            : $"search \"{factory.CompartmentId}/{logGroupId}/{logId}\" | sort by datetime desc";
+            ? $"search \"{compartmentId}/{logGroupId}\" | sort by datetime desc"
+            : $"search \"{compartmentId}/{logGroupId}/{logId}\" | sort by datetime desc";
 
     // Runs a log search query and returns the entries
     public async ValueTask<List<LogEntryInfo>> SearchAsync(string query, DateTime timeStart, DateTime timeEnd, int limit, CancellationToken cancellationToken = default)

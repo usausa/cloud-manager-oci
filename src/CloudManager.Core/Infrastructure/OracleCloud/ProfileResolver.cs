@@ -49,7 +49,8 @@ public static class ProfileResolver
         }
 
         var tenancyId = provider.TenantId;
-        return new OciContext(provider, region, tenancyId, String.IsNullOrWhiteSpace(compartmentId) ? tenancyId : compartmentId);
+        var selected = String.IsNullOrWhiteSpace(compartmentId) ? tenancyId : compartmentId;
+        return new OciContext(provider, region, tenancyId, selected, [selected]);
     }
 
     private static bool ProfileExists(string name)

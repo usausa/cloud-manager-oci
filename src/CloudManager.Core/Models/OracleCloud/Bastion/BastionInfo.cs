@@ -2,6 +2,7 @@ namespace CloudManager.Models.OracleCloud.Bastion;
 
 public sealed record BastionInfo(
     string Id,
+    string CompartmentId,
     string Name,
     string BastionType,
     string TargetVcnId,

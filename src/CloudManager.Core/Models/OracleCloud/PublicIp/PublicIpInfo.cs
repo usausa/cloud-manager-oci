@@ -2,6 +2,7 @@ namespace CloudManager.Models.OracleCloud.PublicIp;
 
 public sealed record PublicIpInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string IpAddress,
     string State,

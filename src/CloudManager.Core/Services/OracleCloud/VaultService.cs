@@ -18,19 +18,22 @@ public sealed class VaultService
         this.factory = factory;
     }
 
-    // Lists the secrets of the compartment
+    // Lists the secrets of the compartments in scope
     public async ValueTask<List<SecretInfo>> ListSecretsAsync(CancellationToken cancellationToken = default)
     {
         using var vaults = factory.CreateVaultsClient();
-        var secrets = await OciPaging.ListAllAsync(
-            page => vaults.ListSecrets(new ListSecretsRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var secrets = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => vaults.ListSecrets(new ListSecretsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return secrets
             .Select(static x => new SecretInfo(
                 x.Id,
+                x.CompartmentId,
                 x.SecretName,
                 x.VaultId,
                 OciValues.State(x.LifecycleState),

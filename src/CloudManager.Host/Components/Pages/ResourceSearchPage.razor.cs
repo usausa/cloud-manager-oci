@@ -71,12 +71,6 @@ public sealed partial class ResourceSearchPage
         resource.ResourceType.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
         resource.Identifier.Contains(filterText, StringComparison.OrdinalIgnoreCase);
 
-    private string CompartmentName(string compartmentId) =>
-        Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Name ?? DisplayFormat.Ocid(compartmentId);
-
-    private string CompartmentPath(string compartmentId) =>
-        Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Path ?? compartmentId;
-
     // The compartment condition matches the compartment itself, not its children
     private string BuildQuery()
     {

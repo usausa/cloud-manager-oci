@@ -1,7 +1,7 @@
 @page "/public-ip"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Public IP</PageTitle>
+<PageTitle>CloudManager OCI - Public IP</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -18,6 +18,7 @@
           Loading="@IsLoading" RowsPerPage="25">
     <HeaderContent>
         <MudTh>名前</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>IP アドレス</MudTh>
         <MudTh>状態</MudTh>
         <MudTh>割当先</MudTh>
@@ -26,6 +27,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd>@context.IpAddress</MudTd>
         <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ASSIGNED" ? Color.Primary : Color.Default)">@context.State</MudChip></MudTd>
         <MudTd><span title="@context.AssignedEntityId">@(context.AssignedEntityId is null ? "-" : $"{context.AssignedEntityType} {DisplayFormat.Ocid(context.AssignedEntityId)}")</span></MudTd>

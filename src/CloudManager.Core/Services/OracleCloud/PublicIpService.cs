@@ -15,27 +15,30 @@ public sealed class PublicIpService
         this.factory = factory;
     }
 
-    // Lists the reserved public IPs of the compartment
+    // Lists the reserved public IPs of the compartments in scope
     public async ValueTask<List<PublicIpInfo>> ListPublicIpsAsync(CancellationToken cancellationToken = default)
     {
         using var network = factory.CreateVirtualNetworkClient();
-        var publicIps = await OciPaging.ListAllAsync(
-            page => network.ListPublicIps(
-                new ListPublicIpsRequest
-                {
-                    CompartmentId = factory.CompartmentId,
-                    Scope = ListPublicIpsRequest.ScopeEnum.Region,
-                    Lifetime = ListPublicIpsRequest.LifetimeEnum.Reserved,
-                    Page = page
-                },
-                cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var publicIps = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => network.ListPublicIps(
+                    new ListPublicIpsRequest
+                    {
+                        CompartmentId = compartmentId,
+                        Scope = ListPublicIpsRequest.ScopeEnum.Region,
+                        Lifetime = ListPublicIpsRequest.LifetimeEnum.Reserved,
+                        Page = page
+                    },
+                    cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return publicIps
             .Select(static x => new PublicIpInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 x.IpAddress,
                 OciValues.State(x.LifecycleState),
@@ -55,8 +58,10 @@ public sealed class PublicIpService
         using var compute = factory.CreateComputeClient();
         using var network = factory.CreateVirtualNetworkClient();
 
+        // VNIC attachments are listed in the compartment of the instance
+        var instance = await compute.GetInstance(new GetInstanceRequest { InstanceId = instanceId }, cancellationToken: cancellationToken);
         var attachments = await OciPaging.ListAllAsync(
-            page => compute.ListVnicAttachments(new ListVnicAttachmentsRequest { CompartmentId = factory.CompartmentId, InstanceId = instanceId, Page = page }, cancellationToken: cancellationToken),
+            page => compute.ListVnicAttachments(new ListVnicAttachmentsRequest { CompartmentId = instance.Instance.CompartmentId, InstanceId = instanceId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage);
 

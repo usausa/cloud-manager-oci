@@ -3,6 +3,7 @@ namespace CloudManager.Models.OracleCloud.Monitoring;
 // Status is FIRING / OK / SUSPENDED from the alarm status API
 public sealed record AlarmInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string Namespace,
     string Query,

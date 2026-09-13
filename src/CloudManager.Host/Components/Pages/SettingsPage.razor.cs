@@ -12,9 +12,6 @@ public sealed partial class SettingsPage
 
     private string selectedCompartment = string.Empty;
 
-    [Inject]
-    public required IdentityService IdentityService { get; set; }
-
     // Subscribed regions once loaded, otherwise the current region only
     private IReadOnlyList<string> Regions =>
         Session.AvailableRegions.Count > 0

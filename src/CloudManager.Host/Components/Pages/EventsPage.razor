@@ -1,7 +1,7 @@
 @page "/events"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Events</PageTitle>
+<PageTitle>CloudManager OCI - Events</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -23,6 +23,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh>ルール名</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>有効</MudTh>
         <MudTh>状態</MudTh>
         <MudTh>条件</MudTh>
@@ -38,6 +39,7 @@
                 <MudText Typo="Typo.caption" Class="d-block">@context.Description</MudText>
             }
         </MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd>
             <MudChip T="string" Size="Size.Small" Color="@(context.IsEnabled ? Color.Success : Color.Default)">
                 @(context.IsEnabled ? "有効" : "無効")

@@ -2,6 +2,7 @@ namespace CloudManager.Models.OracleCloud.ContainerInstance;
 
 public sealed record ContainerInstanceInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string State,
     string Shape,

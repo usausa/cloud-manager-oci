@@ -1,7 +1,7 @@
 @page "/logging"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Logging</PageTitle>
+<PageTitle>CloudManager OCI - Logging</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -21,6 +21,7 @@
                   Loading="@IsLoading" RowsPerPage="25" SelectedItem="selectedGroup" SelectedItemChanged="OnGroupSelectedAsync">
             <HeaderContent>
                 <MudTh>名前</MudTh>
+                <CompartmentTh Visible="ShowCompartment" />
                 <MudTh>説明</MudTh>
                 <MudTh>状態</MudTh>
                 <MudTh>作成日時</MudTh>
@@ -29,6 +30,7 @@
                 <MudTd>
                     <MudText Class="@(context == selectedGroup ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.DisplayName</span></MudText>
                 </MudTd>
+                <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
                 <MudTd>@(context.Description ?? "-")</MudTd>
                 <MudTd>@context.State</MudTd>
                 <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>

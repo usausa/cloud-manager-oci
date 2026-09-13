@@ -58,7 +58,7 @@ public sealed partial class LoggingPage
             return;
         }
 
-        query = Service.BuildQuery(group.Id, null);
+        query = LoggingService.BuildQuery(group.CompartmentId, group.Id, null);
 
         isLogsLoading = true;
         try
@@ -81,7 +81,7 @@ public sealed partial class LoggingPage
         selectedLog = log;
         if (selectedGroup is not null)
         {
-            query = Service.BuildQuery(selectedGroup.Id, log?.Id);
+            query = LoggingService.BuildQuery(selectedGroup.CompartmentId, selectedGroup.Id, log?.Id);
         }
     }
 

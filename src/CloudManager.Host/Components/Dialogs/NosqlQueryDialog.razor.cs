@@ -20,6 +20,9 @@ public sealed partial class NosqlQueryDialog
     public required IMudDialogInstance MudDialog { get; set; }
 
     [Parameter]
+    public string CompartmentId { get; set; } = string.Empty;
+
+    [Parameter]
     public string TableName { get; set; } = string.Empty;
 
     [Inject]
@@ -35,7 +38,7 @@ public sealed partial class NosqlQueryDialog
     private Task RunAsync() =>
         LoadAsync(async () =>
         {
-            rows = await Service.QueryAsync(statement, limit, CancellationToken);
+            rows = await Service.QueryAsync(CompartmentId, statement, limit, CancellationToken);
 #pragma warning disable IDE0028
             columns = rows.SelectMany(static x => x.Columns.Keys).Distinct(StringComparer.Ordinal).ToList();
 #pragma warning restore IDE0028

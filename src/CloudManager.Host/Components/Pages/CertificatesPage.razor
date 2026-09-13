@@ -1,7 +1,7 @@
 @page "/certificates"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Certificates</PageTitle>
+<PageTitle>CloudManager OCI - Certificates</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
     <MudText Typo="Typo.h5">Certificates</MudText>
@@ -16,6 +16,7 @@
           Loading="@IsLoading" RowsPerPage="25">
     <HeaderContent>
         <MudTh>名前</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>コモンネーム</MudTh>
         <MudTh>種類</MudTh>
         <MudTh>状態</MudTh>
@@ -25,6 +26,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd><span title="@context.Id">@context.Name</span></MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd>@(context.CommonName ?? "-")</MudTd>
         <MudTd>@context.ConfigType</MudTd>
         <MudTd>@context.State</MudTd>

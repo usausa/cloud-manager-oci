@@ -1,7 +1,7 @@
 @page "/bastion"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Bastion</PageTitle>
+<PageTitle>CloudManager OCI - Bastion</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -21,6 +21,7 @@
                   Loading="@IsLoading" SelectedItem="selectedBastion" SelectedItemChanged="OnBastionSelectedAsync" RowsPerPage="25">
             <HeaderContent>
                 <MudTh>名前</MudTh>
+                <CompartmentTh Visible="ShowCompartment" />
                 <MudTh>種類</MudTh>
                 <MudTh>状態</MudTh>
                 <MudTh>ターゲット VCN</MudTh>
@@ -31,6 +32,7 @@
                 <MudTd>
                     <MudText Class="@(context == selectedBastion ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.Name</span></MudText>
                 </MudTd>
+                <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
                 <MudTd>@context.BastionType</MudTd>
                 <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ACTIVE" ? Color.Success : Color.Default)">@context.State</MudChip></MudTd>
                 <MudTd><span title="@context.TargetVcnId">@DisplayFormat.Ocid(context.TargetVcnId)</span></MudTd>

@@ -1,7 +1,7 @@
 @page "/ocir"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Container Registry</PageTitle>
+<PageTitle>CloudManager OCI - Container Registry</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
     <MudText Typo="Typo.h5">Container Registry</MudText>
@@ -21,6 +21,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh>リポジトリ名</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>アドレス</MudTh>
         <MudTh>イメージ数</MudTh>
         <MudTh>サイズ</MudTh>
@@ -31,6 +32,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.DisplayName</MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd class="break-all">@context.Address</MudTd>
         <MudTd>@context.ImageCount</MudTd>
         <MudTd>@DisplayFormat.Size(context.LayersSizeBytes)</MudTd>

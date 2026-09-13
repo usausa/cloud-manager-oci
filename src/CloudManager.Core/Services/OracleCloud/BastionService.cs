@@ -21,19 +21,22 @@ public sealed class BastionService
         this.factory = factory;
     }
 
-    // Lists the bastions of the compartment
+    // Lists the bastions of the compartments in scope
     public async ValueTask<List<BastionInfo>> ListBastionsAsync(CancellationToken cancellationToken = default)
     {
         using var bastion = factory.CreateBastionClient();
-        var bastions = await OciPaging.ListAllAsync(
-            page => bastion.ListBastions(new ListBastionsRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var bastions = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => bastion.ListBastions(new ListBastionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return bastions
             .Select(static x => new BastionInfo(
                 x.Id,
+                x.CompartmentId,
                 x.Name,
                 x.BastionType,
                 x.TargetVcnId,

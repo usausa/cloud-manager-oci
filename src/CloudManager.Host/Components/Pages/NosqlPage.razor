@@ -1,7 +1,7 @@
 @page "/nosql"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - NoSQL</PageTitle>
+<PageTitle>CloudManager OCI - NoSQL</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
     <MudText Typo="Typo.h5">NoSQL Database</MudText>
@@ -16,6 +16,7 @@
           Loading="@IsLoading" RowsPerPage="25">
     <HeaderContent>
         <MudTh>テーブル名</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>状態</MudTh>
         <MudTh>容量モード</MudTh>
         <MudTh>読み取り単位</MudTh>
@@ -26,6 +27,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd><span title="@context.Id">@context.Name</span></MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd>@context.State</MudTd>
         <MudTd>@context.CapacityMode</MudTd>
         <MudTd>@(context.MaxReadUnits?.ToString() ?? "-")</MudTd>

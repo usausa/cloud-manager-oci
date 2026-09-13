@@ -1,7 +1,7 @@
 @page "/dns"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - DNS</PageTitle>
+<PageTitle>CloudManager OCI - DNS</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -26,6 +26,7 @@
             </ToolBarContent>
             <HeaderContent>
                 <MudTh>名前</MudTh>
+                <CompartmentTh Visible="ShowCompartment" />
                 <MudTh>種別</MudTh>
                 <MudTh>スコープ</MudTh>
                 <MudTh>状態</MudTh>
@@ -36,6 +37,7 @@
                 <MudTd>
                     <MudText Class="@(context == selectedZone ? "mud-primary-text font-bold" : string.Empty)">@context.Name</MudText>
                 </MudTd>
+                <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
                 <MudTd>@context.ZoneType</MudTd>
                 <MudTd>@context.Scope</MudTd>
                 <MudTd>@context.State</MudTd>

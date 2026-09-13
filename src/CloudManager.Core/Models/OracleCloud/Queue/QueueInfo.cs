@@ -3,6 +3,7 @@ namespace CloudManager.Models.OracleCloud.Queue;
 // MessagesEndpoint is the data plane host used for put/get
 public sealed record QueueInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string State,
     string MessagesEndpoint,

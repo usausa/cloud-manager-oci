@@ -1,7 +1,7 @@
 @page "/compute"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Compute</PageTitle>
+<PageTitle>CloudManager OCI - Compute</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -34,6 +34,7 @@
           Loading="@IsLoading" RowsPerPage="25">
     <HeaderContent>
         <MudTh>名前</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>OCID</MudTh>
         <MudTh>状態</MudTh>
         <MudTh>シェイプ</MudTh>
@@ -45,6 +46,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.DisplayName</MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd><span title="@context.Id">@DisplayFormat.Ocid(context.Id)</span></MudTd>
         <MudTd><MudChip T="string" Color="@StateColor(context.State)" Size="Size.Small">@context.State</MudChip></MudTd>
         <MudTd>@context.Shape @(context.Ocpus.HasValue ? $"({context.Ocpus} OCPU / {context.MemoryGb} GB)" : string.Empty)</MudTd>

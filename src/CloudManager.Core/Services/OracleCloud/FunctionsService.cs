@@ -20,19 +20,22 @@ public sealed class FunctionsService
         this.factory = factory;
     }
 
-    // Lists the applications of the compartment
+    // Lists the applications of the compartments in scope
     public async ValueTask<List<FunctionsApplicationInfo>> ListApplicationsAsync(CancellationToken cancellationToken = default)
     {
         using var management = factory.CreateFunctionsManagementClient();
-        var applications = await OciPaging.ListAllAsync(
-            page => management.ListApplications(new ListApplicationsRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var applications = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => management.ListApplications(new ListApplicationsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return applications
             .Select(static x => new FunctionsApplicationInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 OciValues.State(x.LifecycleState),
                 OciValues.State(x.Shape),

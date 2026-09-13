@@ -17,19 +17,22 @@ public sealed class AutonomousDatabaseService
         this.factory = factory;
     }
 
-    // Lists the Autonomous Databases of the compartment
+    // Lists the Autonomous Databases of the compartments in scope
     public async ValueTask<List<AutonomousDatabaseInfo>> ListAsync(CancellationToken cancellationToken = default)
     {
         using var database = factory.CreateDatabaseClient();
-        var databases = await OciPaging.ListAllAsync(
-            page => database.ListAutonomousDatabases(new ListAutonomousDatabasesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var databases = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => database.ListAutonomousDatabases(new ListAutonomousDatabasesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return databases
             .Select(static x => new AutonomousDatabaseInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 x.DbName,
                 OciValues.State(x.LifecycleState),
@@ -83,21 +86,13 @@ public sealed class AutonomousDatabaseService
         }
     }
 
-    // Lists backups of the compartment, optionally of one database
+    // Lists backups of the compartments in scope, or of one database
     public async ValueTask<List<AutonomousDatabaseBackupInfo>> ListBackupsAsync(string? databaseId, CancellationToken cancellationToken = default)
     {
         using var database = factory.CreateDatabaseClient();
-        var backups = await OciPaging.ListAllAsync(
-            page => database.ListAutonomousDatabaseBackups(
-                new ListAutonomousDatabaseBackupsRequest
-                {
-                    CompartmentId = String.IsNullOrEmpty(databaseId) ? factory.CompartmentId : null,
-                    AutonomousDatabaseId = String.IsNullOrEmpty(databaseId) ? null : databaseId,
-                    Page = page
-                },
-                cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var backups = String.IsNullOrEmpty(databaseId)
+            ? await factory.ListInScopeAsync(compartmentId => ListBackupsAsync(database, compartmentId, null, cancellationToken), cancellationToken)
+            : await ListBackupsAsync(database, null, databaseId, cancellationToken);
 
 #pragma warning disable IDE0028
         return backups
@@ -189,12 +184,20 @@ public sealed class AutonomousDatabaseService
 #pragma warning restore IDE0028
     }
 
-    // Work requests of a resource, newest first
-    public async ValueTask<List<WorkRequestInfo>> ListWorkRequestsAsync(string resourceId, CancellationToken cancellationToken = default)
+    private static ValueTask<List<AutonomousDatabaseBackupSummary>> ListBackupsAsync(DatabaseClient database, string? compartmentId, string? databaseId, CancellationToken cancellationToken) =>
+        OciPaging.ListAllAsync(
+            page => database.ListAutonomousDatabaseBackups(
+                new ListAutonomousDatabaseBackupsRequest { CompartmentId = compartmentId, AutonomousDatabaseId = databaseId, Page = page },
+                cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage);
+
+    // Work requests of a resource in its compartment, newest first
+    public async ValueTask<List<WorkRequestInfo>> ListWorkRequestsAsync(string compartmentId, string resourceId, CancellationToken cancellationToken = default)
     {
         using var workRequest = factory.CreateWorkRequestClient();
         var requests = await OciPaging.ListAllAsync(
-            page => workRequest.ListWorkRequests(new ListWorkRequestsRequest { CompartmentId = factory.CompartmentId, ResourceId = resourceId, Page = page }, cancellationToken: cancellationToken),
+            page => workRequest.ListWorkRequests(new ListWorkRequestsRequest { CompartmentId = compartmentId, ResourceId = resourceId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage);
 

@@ -1,7 +1,7 @@
 @page "/vault"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Vault</PageTitle>
+<PageTitle>CloudManager OCI - Vault</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -23,6 +23,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh>名前</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>状態</MudTh>
         <MudTh>Vault</MudTh>
         <MudTh>ローテーション</MudTh>
@@ -39,6 +40,7 @@
                 <MudText Typo="Typo.caption" Class="d-block">@context.Description</MudText>
             }
         </MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ACTIVE" ? Color.Success : Color.Default)">@context.State</MudChip></MudTd>
         <MudTd><span title="@context.VaultId">@DisplayFormat.Ocid(context.VaultId)</span></MudTd>
         <MudTd>@context.RotationStatus</MudTd>

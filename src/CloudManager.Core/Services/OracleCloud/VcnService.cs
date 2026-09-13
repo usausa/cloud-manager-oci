@@ -14,19 +14,22 @@ public sealed class VcnService
         this.factory = factory;
     }
 
-    // Lists the VCNs of the compartment
+    // Lists the VCNs of the compartments in scope
     public async ValueTask<List<VcnInfo>> ListVcnsAsync(CancellationToken cancellationToken = default)
     {
         using var network = factory.CreateVirtualNetworkClient();
-        var vcns = await OciPaging.ListAllAsync(
-            page => network.ListVcns(new ListVcnsRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var vcns = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => network.ListVcns(new ListVcnsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return vcns
             .Select(static x => new VcnInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 String.Join(", ", x.CidrBlocks ?? [x.CidrBlock]),
                 OciValues.State(x.LifecycleState),
@@ -37,14 +40,14 @@ public sealed class VcnService
 #pragma warning restore IDE0028
     }
 
-    // Loads the components of a VCN in parallel
+    // Loads the components of a VCN in parallel; they are listed in the compartment of the VCN
     public async ValueTask<VcnDetail> GetVcnDetailAsync(string vcnId, CancellationToken cancellationToken = default)
     {
         using var network = factory.CreateVirtualNetworkClient();
-        var compartmentId = factory.CompartmentId;
 
         var vcnResponse = await network.GetVcn(new GetVcnRequest { VcnId = vcnId }, cancellationToken: cancellationToken);
         var vcn = vcnResponse.Vcn;
+        var compartmentId = vcn.CompartmentId;
 
         var subnetsTask = OciPaging.ListAllAsync(
             page => network.ListSubnets(new ListSubnetsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
@@ -78,7 +81,7 @@ public sealed class VcnService
 
 #pragma warning disable IDE0028
         return new VcnDetail(
-            new VcnInfo(vcn.Id, vcn.DisplayName, String.Join(", ", vcn.CidrBlocks ?? [vcn.CidrBlock]), OciValues.State(vcn.LifecycleState), vcn.DnsLabel, vcn.TimeCreated.GetValueOrDefault()),
+            new VcnInfo(vcn.Id, vcn.CompartmentId, vcn.DisplayName, String.Join(", ", vcn.CidrBlocks ?? [vcn.CidrBlock]), OciValues.State(vcn.LifecycleState), vcn.DnsLabel, vcn.TimeCreated.GetValueOrDefault()),
             (await subnetsTask)
                 .Select(static x => new SubnetInfo(x.Id, x.DisplayName, x.CidrBlock, x.AvailabilityDomain, !(x.ProhibitPublicIpOnVnic ?? false), OciValues.State(x.LifecycleState)))
                 .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)

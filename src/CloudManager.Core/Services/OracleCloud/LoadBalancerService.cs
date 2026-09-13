@@ -21,25 +21,29 @@ public sealed class LoadBalancerService
         this.factory = factory;
     }
 
-    // Lists load balancers and network load balancers of the compartment
+    // Lists load balancers and network load balancers of the compartments in scope
     public async ValueTask<List<LoadBalancerInfo>> ListLoadBalancersAsync(CancellationToken cancellationToken = default)
     {
         using var lb = factory.CreateLoadBalancerClient();
         using var nlb = factory.CreateNetworkLoadBalancerClient();
-        var compartmentId = factory.CompartmentId;
 
-        var loadBalancers = await OciPaging.ListAllAsync(
-            page => lb.ListLoadBalancers(new ListLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
-        var networkLoadBalancers = await OciPaging.ListAllAsync(
-            page => nlb.ListNetworkLoadBalancers(new Nlb.ListNetworkLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.NetworkLoadBalancerCollection.Items,
-            static x => x.OpcNextPage);
+        var loadBalancers = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => lb.ListLoadBalancers(new ListLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
+        var networkLoadBalancers = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => nlb.ListNetworkLoadBalancers(new Nlb.ListNetworkLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.NetworkLoadBalancerCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
         var result = loadBalancers
             .Select(static x => new LoadBalancerInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 TypeLoadBalancer,
                 OciValues.State(x.LifecycleState),
@@ -51,6 +55,7 @@ public sealed class LoadBalancerService
                 x.TimeCreated.GetValueOrDefault()))
             .Concat(networkLoadBalancers.Select(static x => new LoadBalancerInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 TypeNetworkLoadBalancer,
                 OciValues.State(x.LifecycleState),

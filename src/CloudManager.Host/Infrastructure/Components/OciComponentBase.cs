@@ -2,6 +2,7 @@ namespace CloudManager.Host.Infrastructure.Components;
 
 using CloudManager.Host.Infrastructure.OracleCloud;
 using CloudManager.Infrastructure.OracleCloud;
+using CloudManager.Services.OracleCloud;
 
 using Microsoft.AspNetCore.Components;
 
@@ -14,6 +15,9 @@ public abstract class OciComponentBase : AppComponentBase
 
     [Inject]
     public required OciSession Session { get; set; }
+
+    [Inject]
+    public required IdentityService IdentityService { get; set; }
 
     [Inject]
     public required ISnackbar Snackbar { get; set; }
@@ -62,6 +66,15 @@ public abstract class OciComponentBase : AppComponentBase
     // Pages override this to reload when the profile or compartment changes
     protected virtual Task OnSessionChangedAsync() => Task.CompletedTask;
 
+    // Lists spanning several compartments show where each row lives
+    protected bool ShowCompartment => Session.ScopeCompartmentIds.Count > 1;
+
+    protected string CompartmentName(string? compartmentId) =>
+        Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Name ?? DisplayFormat.Ocid(compartmentId);
+
+    protected string CompartmentPath(string? compartmentId) =>
+        Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Path ?? compartmentId ?? "-";
+
     // Loads data, showing failures in the banner
     protected async Task LoadAsync(Func<Task> load)
     {
@@ -69,6 +82,7 @@ public abstract class OciComponentBase : AppComponentBase
         ErrorMessage = null;
         try
         {
+            await EnsureScopeAsync();
             await load();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -118,6 +132,20 @@ public abstract class OciComponentBase : AppComponentBase
     }
 
     protected static string FormatError(Exception ex) => ex.FormatError();
+
+    // The compartment tree decides which compartments a listing covers, so it is loaded before any listing;
+    // a failure is reported by the compartment selector and the listing falls back to the selected compartment
+    private async Task EnsureScopeAsync()
+    {
+        try
+        {
+            await Session.EnsureLoadedAsync(IdentityService);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Reported by the compartment selector
+        }
+    }
 
     private void OnSessionChanged(object? sender, EventArgs e)
     {

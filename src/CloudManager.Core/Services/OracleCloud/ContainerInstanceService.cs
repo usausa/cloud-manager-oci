@@ -15,19 +15,22 @@ public sealed class ContainerInstanceService
         this.factory = factory;
     }
 
-    // Lists the container instances of the compartment
+    // Lists the container instances of the compartments in scope
     public async ValueTask<List<ContainerInstanceInfo>> ListAsync(CancellationToken cancellationToken = default)
     {
         using var client = factory.CreateContainerInstanceClient();
-        var instances = await OciPaging.ListAllAsync(
-            page => client.ListContainerInstances(new ListContainerInstancesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.ContainerInstanceCollection.Items,
-            static x => x.OpcNextPage);
+        var instances = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => client.ListContainerInstances(new ListContainerInstancesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.ContainerInstanceCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return instances
             .Select(static x => new ContainerInstanceInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 OciValues.State(x.LifecycleState),
                 x.Shape,
@@ -77,12 +80,13 @@ public sealed class ContainerInstanceService
         }
     }
 
-    // Containers of an instance
+    // Containers of an instance, listed in the compartment of the instance
     public async ValueTask<List<ContainerInfo>> ListContainersAsync(string containerInstanceId, CancellationToken cancellationToken = default)
     {
         using var client = factory.CreateContainerInstanceClient();
+        var instance = await client.GetContainerInstance(new GetContainerInstanceRequest { ContainerInstanceId = containerInstanceId }, cancellationToken: cancellationToken);
         var containers = await OciPaging.ListAllAsync(
-            page => client.ListContainers(new ListContainersRequest { CompartmentId = factory.CompartmentId, ContainerInstanceId = containerInstanceId, Page = page }, cancellationToken: cancellationToken),
+            page => client.ListContainers(new ListContainersRequest { CompartmentId = instance.ContainerInstance.CompartmentId, ContainerInstanceId = containerInstanceId, Page = page }, cancellationToken: cancellationToken),
             static x => x.ContainerCollection.Items,
             static x => x.OpcNextPage);
 

@@ -1,7 +1,7 @@
 @page "/identity-domains"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Identity Domains</PageTitle>
+<PageTitle>CloudManager OCI - Identity Domains</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -21,6 +21,7 @@
                   Loading="@IsLoading" SelectedItem="selectedDomain" SelectedItemChanged="OnDomainSelectedAsync" RowsPerPage="25">
             <HeaderContent>
                 <MudTh>名前</MudTh>
+                <CompartmentTh Visible="ShowCompartment" />
                 <MudTh>種類</MudTh>
                 <MudTh>ライセンス</MudTh>
                 <MudTh>状態</MudTh>
@@ -32,6 +33,7 @@
                 <MudTd>
                     <MudText Class="@(context == selectedDomain ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.DisplayName</span></MudText>
                 </MudTd>
+                <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
                 <MudTd>@context.Type</MudTd>
                 <MudTd>@context.LicenseType</MudTd>
                 <MudTd>@context.State</MudTd>

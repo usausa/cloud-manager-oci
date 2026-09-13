@@ -81,8 +81,13 @@ public sealed partial class Home
 
     private int alarmFiring;
 
-    [Inject]
-    public required IdentityService IdentityService { get; set; }
+    private decimal? costCurrentMonth;
+
+    private decimal? costPreviousMonth;
+
+    private string costCurrency = string.Empty;
+
+    private string? costError;
 
     [Inject]
     public required ResourceSearchService ResourceSearchService { get; set; }
@@ -90,10 +95,17 @@ public sealed partial class Home
     [Inject]
     public required MonitoringService MonitoringService { get; set; }
 
+    [Inject]
+    public required CostService CostService { get; set; }
+
     // The tenancy root shows the whole tenancy, other compartments only themselves
     private bool IsTenancyScope => String.Equals(Session.CompartmentId, Session.TenancyId, StringComparison.Ordinal);
 
     private string ScopeName => IsTenancyScope ? $"{Session.CompartmentName} (テナンシ全体)" : Session.CompartmentName;
+
+    private static string CurrentMonthLabel => DateTime.UtcNow.ToString("yyyy/MM", CultureInfo.InvariantCulture);
+
+    private static string PreviousMonthLabel => DateTime.UtcNow.AddMonths(-1).ToString("yyyy/MM", CultureInfo.InvariantCulture);
 
     protected override Task OnInitializedAsync() =>
         Session.IsProfileAvailable ? LoadAsync(LoadSummaryAsync) : Task.CompletedTask;
@@ -103,12 +115,11 @@ public sealed partial class Home
 
     private async Task LoadSummaryAsync()
     {
-        // Resolve compartment names first so the header shows the path instead of the OCID
-        await Session.EnsureLoadedAsync(IdentityService);
-
-        var countTask = ResourceSearchService.CountByStateAsync(["instance", "autonomousdatabase", "containerinstance"], IsTenancyScope ? null : Session.CompartmentId, CancellationToken).AsTask();
+        // The base class has loaded the compartments, so the counts follow the same scope as the pages
+        var countTask = ResourceSearchService.CountByStateAsync(["instance", "autonomousdatabase", "containerinstance"], IsTenancyScope ? null : Session.ScopeCompartmentIds, CancellationToken).AsTask();
         var alarmTask = MonitoringService.ListAlarmsAsync(CancellationToken).AsTask();
-        await Task.WhenAll(countTask, alarmTask);
+        var costTask = LoadCostAsync();
+        await Task.WhenAll(countTask, alarmTask, costTask);
 
         var counts = await countTask;
         computeRunning = Count(counts, "Instance", "RUNNING");
@@ -120,6 +131,33 @@ public sealed partial class Home
 
         alarmFiring = (await alarmTask).Count(static x => x.Status == "FIRING");
     }
+
+    // Cost failures (e.g. missing usage-report permissions) only affect the cost card
+    private async Task LoadCostAsync()
+    {
+        costCurrentMonth = null;
+        costPreviousMonth = null;
+        costError = null;
+        try
+        {
+            var compartmentId = IsTenancyScope ? null : Session.CompartmentId;
+            var now = DateTime.UtcNow;
+            var previous = now.AddMonths(-1);
+            var current = await CostService.SummarizeByServiceAsync(now.Year, now.Month, compartmentId, CancellationToken);
+            var last = await CostService.SummarizeByServiceAsync(previous.Year, previous.Month, compartmentId, CancellationToken);
+
+            costCurrentMonth = current.Sum(static x => x.Amount);
+            costPreviousMonth = last.Sum(static x => x.Amount);
+            costCurrency = current.Concat(last).Select(static x => x.Currency).FirstOrDefault(static x => !String.IsNullOrEmpty(x)) ?? string.Empty;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            costError = FormatError(ex);
+        }
+    }
+
+    private static string FormatAmount(decimal? value) =>
+        value?.ToString("N2", CultureInfo.InvariantCulture) ?? "-";
 
     private static int Count(List<ResourceStateCount> counts, string resourceType, string state) =>
         counts

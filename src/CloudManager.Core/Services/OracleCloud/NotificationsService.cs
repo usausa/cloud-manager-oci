@@ -15,21 +15,24 @@ public sealed class NotificationsService
         this.factory = factory;
     }
 
-    // Lists the topics of the compartment with their subscription counts
+    // Lists the topics of the compartments in scope with their subscription counts
     public async ValueTask<List<TopicInfo>> ListTopicsAsync(CancellationToken cancellationToken = default)
     {
         using var control = factory.CreateNotificationControlPlaneClient();
         using var data = factory.CreateNotificationDataPlaneClient();
-        var compartmentId = factory.CompartmentId;
 
-        var topics = await OciPaging.ListAllAsync(
-            page => control.ListTopics(new ListTopicsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
-        var subscriptions = await OciPaging.ListAllAsync(
-            page => data.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var topics = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => control.ListTopics(new ListTopicsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
+        var subscriptions = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => data.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
         var countByTopic = subscriptions
             .GroupBy(static x => x.TopicId, StringComparer.Ordinal)
             .ToDictionary(static g => g.Key, static g => g.Count(), StringComparer.Ordinal);
@@ -38,6 +41,7 @@ public sealed class NotificationsService
         return topics
             .Select(x => new TopicInfo(
                 x.TopicId,
+                x.CompartmentId,
                 x.Name,
                 OciValues.State(x.LifecycleState),
                 x.Description,
@@ -48,14 +52,16 @@ public sealed class NotificationsService
 #pragma warning restore IDE0028
     }
 
-    // Subscriptions of a topic
+    // Subscriptions of a topic; they may live in any compartment in scope
     public async ValueTask<List<SubscriptionInfo>> ListSubscriptionsAsync(string topicId, CancellationToken cancellationToken = default)
     {
         using var data = factory.CreateNotificationDataPlaneClient();
-        var subscriptions = await OciPaging.ListAllAsync(
-            page => data.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = factory.CompartmentId, TopicId = topicId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var subscriptions = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => data.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, TopicId = topicId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return subscriptions

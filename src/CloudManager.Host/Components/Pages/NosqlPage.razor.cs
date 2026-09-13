@@ -31,6 +31,7 @@ public sealed partial class NosqlPage
             string.Empty,
             new DialogParameters<NosqlQueryDialog>
             {
+                { x => x.CompartmentId, table.CompartmentId },
                 { x => x.TableName, table.Name }
             },
             WideDialogOptions);
@@ -40,6 +41,7 @@ public sealed partial class NosqlPage
     {
         await DialogService.ShowAsync<NosqlSchemaDialog>("スキーマ", new DialogParameters<NosqlSchemaDialog>
         {
+            { x => x.CompartmentId, table.CompartmentId },
             { x => x.TableName, table.Name }
         });
     }

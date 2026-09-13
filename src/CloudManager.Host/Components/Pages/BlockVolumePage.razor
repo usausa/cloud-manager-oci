@@ -1,7 +1,7 @@
 @page "/block-volume"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Block Volume</PageTitle>
+<PageTitle>CloudManager OCI - Block Volume</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -29,6 +29,7 @@
           Loading="@IsLoading" RowsPerPage="25">
     <HeaderContent>
         <MudTh>名前</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>種類</MudTh>
         <MudTh>サイズ(GB)</MudTh>
         <MudTh>VPU/GB</MudTh>
@@ -40,6 +41,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd>@(context.IsBootVolume ? "ブート" : "ブロック")</MudTd>
         <MudTd>@context.SizeGb</MudTd>
         <MudTd>@(context.VpusPerGb?.ToString() ?? "-")</MudTd>

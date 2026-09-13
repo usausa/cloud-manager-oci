@@ -16,19 +16,22 @@ public sealed class ApiGatewayService
         this.factory = factory;
     }
 
-    // Lists the gateways of the compartment
+    // Lists the gateways of the compartments in scope
     public async ValueTask<List<ApiGatewayInfo>> ListGatewaysAsync(CancellationToken cancellationToken = default)
     {
         using var gateway = factory.CreateGatewayClient();
-        var gateways = await OciPaging.ListAllAsync(
-            page => gateway.ListGateways(new ListGatewaysRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.GatewayCollection.Items,
-            static x => x.OpcNextPage);
+        var gateways = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => gateway.ListGateways(new ListGatewaysRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.GatewayCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return gateways
             .Select(static x => new ApiGatewayInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 OciValues.State(x.EndpointType),
                 x.Hostname,
@@ -39,14 +42,16 @@ public sealed class ApiGatewayService
 #pragma warning restore IDE0028
     }
 
-    // Deployments of a gateway
+    // Deployments of a gateway; they may live in any compartment in scope
     public async ValueTask<List<ApiDeploymentInfo>> ListDeploymentsAsync(string gatewayId, CancellationToken cancellationToken = default)
     {
         using var deployment = factory.CreateDeploymentClient();
-        var deployments = await OciPaging.ListAllAsync(
-            page => deployment.ListDeployments(new ListDeploymentsRequest { CompartmentId = factory.CompartmentId, GatewayId = gatewayId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.DeploymentCollection.Items,
-            static x => x.OpcNextPage);
+        var deployments = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => deployment.ListDeployments(new ListDeploymentsRequest { CompartmentId = compartmentId, GatewayId = gatewayId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.DeploymentCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return deployments

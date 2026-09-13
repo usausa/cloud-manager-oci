@@ -2,6 +2,7 @@ namespace CloudManager.Models.OracleCloud.Compute;
 
 public sealed record ComputeInstanceInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string State,
     string Shape,

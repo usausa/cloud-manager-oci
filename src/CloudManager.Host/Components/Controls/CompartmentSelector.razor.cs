@@ -2,14 +2,9 @@ namespace CloudManager.Host.Components.Controls;
 
 using CloudManager.Host.Infrastructure.Components;
 
-using Microsoft.AspNetCore.Components;
-
 // Compartment switch shown in the app bar; pages reload through the session change event
 public sealed partial class CompartmentSelector
 {
-    [Inject]
-    public required IdentityService IdentityService { get; set; }
-
     protected override Task OnInitializedAsync() => LoadCompartmentsAsync();
 
     // The list is reloaded after a profile switch
@@ -22,10 +17,13 @@ public sealed partial class CompartmentSelector
             return;
         }
 
-        await LoadAsync(() => Session.EnsureLoadedAsync(IdentityService));
-        if (ErrorMessage is not null)
+        try
         {
-            Snackbar.AddWarning($"コンパートメントの取得に失敗しました: {ErrorMessage}");
+            await Session.EnsureLoadedAsync(IdentityService);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Snackbar.AddWarning($"コンパートメントの取得に失敗しました: {FormatError(ex)}");
         }
     }
 

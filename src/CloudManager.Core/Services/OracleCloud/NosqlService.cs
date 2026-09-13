@@ -20,19 +20,22 @@ public sealed class NosqlService
         this.factory = factory;
     }
 
-    // Lists the tables of the compartment
+    // Lists the tables of the compartments in scope
     public async ValueTask<List<NosqlTableInfo>> ListTablesAsync(CancellationToken cancellationToken = default)
     {
         using var nosql = factory.CreateNosqlClient();
-        var tables = await OciPaging.ListAllAsync(
-            page => nosql.ListTables(new ListTablesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.TableCollection.Items,
-            static x => x.OpcNextPage);
+        var tables = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => nosql.ListTables(new ListTablesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.TableCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return tables
             .Select(static x => new NosqlTableInfo(
                 x.Id,
+                x.CompartmentId,
                 x.Name,
                 OciValues.State(x.LifecycleState),
                 OciValues.State(x.TableLimits?.CapacityMode),
@@ -45,11 +48,11 @@ public sealed class NosqlService
 #pragma warning restore IDE0028
     }
 
-    // Schema of a table
-    public async ValueTask<NosqlTableDetail> GetTableAsync(string tableNameOrId, CancellationToken cancellationToken = default)
+    // Schema of a table; the compartment resolves the table name
+    public async ValueTask<NosqlTableDetail> GetTableAsync(string compartmentId, string tableNameOrId, CancellationToken cancellationToken = default)
     {
         using var nosql = factory.CreateNosqlClient();
-        var response = await nosql.GetTable(new GetTableRequest { TableNameOrId = tableNameOrId, CompartmentId = factory.CompartmentId }, cancellationToken: cancellationToken);
+        var response = await nosql.GetTable(new GetTableRequest { TableNameOrId = tableNameOrId, CompartmentId = compartmentId }, cancellationToken: cancellationToken);
         var table = response.Table;
 #pragma warning disable IDE0028
         return new NosqlTableDetail(
@@ -61,8 +64,8 @@ public sealed class NosqlService
 #pragma warning restore IDE0028
     }
 
-    // Runs a SQL statement (e.g. SELECT * FROM t) and returns up to limit rows
-    public async ValueTask<List<NosqlRowInfo>> QueryAsync(string statement, int limit, CancellationToken cancellationToken = default)
+    // Runs a SQL statement (e.g. SELECT * FROM t) in the compartment of the table and returns up to limit rows
+    public async ValueTask<List<NosqlRowInfo>> QueryAsync(string compartmentId, string statement, int limit, CancellationToken cancellationToken = default)
     {
         using var nosql = factory.CreateNosqlClient();
         var rows = new List<NosqlRowInfo>();
@@ -72,7 +75,7 @@ public sealed class NosqlService
             var response = await nosql.Query(
                 new QueryRequest
                 {
-                    QueryDetails = new QueryDetails { CompartmentId = factory.CompartmentId, Statement = statement },
+                    QueryDetails = new QueryDetails { CompartmentId = compartmentId, Statement = statement },
                     Limit = Math.Min(limit - rows.Count, 1000),
                     Page = page
                 },

@@ -12,6 +12,9 @@ public sealed partial class NosqlSchemaDialog
     public required IMudDialogInstance MudDialog { get; set; }
 
     [Parameter]
+    public string CompartmentId { get; set; } = string.Empty;
+
+    [Parameter]
     public string TableName { get; set; } = string.Empty;
 
     [Inject]
@@ -20,6 +23,6 @@ public sealed partial class NosqlSchemaDialog
     protected override Task OnInitializedAsync() =>
         LoadAsync(async () =>
         {
-            detail = await Service.GetTableAsync(TableName, CancellationToken);
+            detail = await Service.GetTableAsync(CompartmentId, TableName, CancellationToken);
         });
 }

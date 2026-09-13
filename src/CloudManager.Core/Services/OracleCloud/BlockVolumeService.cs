@@ -3,6 +3,7 @@ namespace CloudManager.Services.OracleCloud;
 using CloudManager.Infrastructure.OracleCloud;
 using CloudManager.Models.OracleCloud.BlockVolume;
 
+using Oci.CoreService;
 using Oci.CoreService.Models;
 using Oci.CoreService.Requests;
 using Oci.IdentityService.Requests;
@@ -19,14 +20,26 @@ public sealed class BlockVolumeService
         this.factory = factory;
     }
 
-    // Lists block volumes and boot volumes of the compartment with their attachments
+    // Lists block volumes and boot volumes of the compartments in scope with their attachments
     public async ValueTask<List<BlockVolumeInfo>> ListVolumesAsync(string? state, CancellationToken cancellationToken = default)
     {
         using var blockstorage = factory.CreateBlockstorageClient();
         using var compute = factory.CreateComputeClient();
         using var identity = factory.CreateIdentityClient();
-        var compartmentId = factory.CompartmentId;
 
+        // Boot volumes are listed per availability domain
+        var domains = await identity.ListAvailabilityDomains(new ListAvailabilityDomainsRequest { CompartmentId = factory.TenancyId }, cancellationToken: cancellationToken);
+        var domainNames = domains.Items.Select(static x => x.Name).ToList();
+
+        var result = await factory.ListInScopeAsync(
+            compartmentId => ListCompartmentVolumesAsync(blockstorage, compute, compartmentId, domainNames, state, cancellationToken),
+            cancellationToken);
+        result.Sort(static (x, y) => String.Compare(x.DisplayName, y.DisplayName, StringComparison.Ordinal));
+        return result;
+    }
+
+    private static async ValueTask<List<BlockVolumeInfo>> ListCompartmentVolumesAsync(BlockstorageClient blockstorage, ComputeClient compute, string compartmentId, List<string> domainNames, string? state, CancellationToken cancellationToken)
+    {
         var volumes = await OciPaging.ListAllAsync(
             page => blockstorage.ListVolumes(
                 new ListVolumesRequest
@@ -53,6 +66,7 @@ public sealed class BlockVolumeService
                 var attachment = attachmentByVolume.GetValueOrDefault(x.Id);
                 return new BlockVolumeInfo(
                     x.Id,
+                    x.CompartmentId,
                     x.DisplayName,
                     OciValues.State(x.LifecycleState),
                     x.SizeInGBs ?? 0,
@@ -65,14 +79,12 @@ public sealed class BlockVolumeService
             })
             .ToList();
 
-        // Boot volumes are listed per availability domain
-        var domains = await identity.ListAvailabilityDomains(new ListAvailabilityDomainsRequest { CompartmentId = factory.TenancyId }, cancellationToken: cancellationToken);
         var bootState = OciValues.ParseState<BootVolume.LifecycleStateEnum>(state);
-        foreach (var domain in domains.Items)
+        foreach (var domain in domainNames)
         {
             var bootVolumes = await OciPaging.ListAllAsync(
                 page => blockstorage.ListBootVolumes(
-                    new ListBootVolumesRequest { AvailabilityDomain = domain.Name, CompartmentId = compartmentId, Page = page },
+                    new ListBootVolumesRequest { AvailabilityDomain = domain, CompartmentId = compartmentId, Page = page },
                     cancellationToken: cancellationToken),
                 static x => x.Items,
                 static x => x.OpcNextPage);
@@ -83,7 +95,7 @@ public sealed class BlockVolumeService
 
             var bootAttachments = await OciPaging.ListAllAsync(
                 page => compute.ListBootVolumeAttachments(
-                    new ListBootVolumeAttachmentsRequest { AvailabilityDomain = domain.Name, CompartmentId = compartmentId, Page = page },
+                    new ListBootVolumeAttachmentsRequest { AvailabilityDomain = domain, CompartmentId = compartmentId, Page = page },
                     cancellationToken: cancellationToken),
                 static x => x.Items,
                 static x => x.OpcNextPage);
@@ -99,6 +111,7 @@ public sealed class BlockVolumeService
                     var attachment = bootAttachmentByVolume.GetValueOrDefault(x.Id);
                     return new BlockVolumeInfo(
                         x.Id,
+                        x.CompartmentId,
                         x.DisplayName,
                         OciValues.State(x.LifecycleState),
                         x.SizeInGBs ?? 0,
@@ -111,7 +124,6 @@ public sealed class BlockVolumeService
                 }));
         }
 
-        result.Sort(static (x, y) => String.Compare(x.DisplayName, y.DisplayName, StringComparison.Ordinal));
         return result;
     }
 

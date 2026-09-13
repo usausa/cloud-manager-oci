@@ -1,7 +1,7 @@
 @page "/queue"
 @inherits OciComponentBase
 
-<PageTitle>CloudManager - Queue</PageTitle>
+<PageTitle>CloudManager OCI - Queue</PageTitle>
 
 <ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
 
@@ -23,6 +23,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh>キュー名</MudTh>
+        <CompartmentTh Visible="ShowCompartment" />
         <MudTh>状態</MudTh>
         <MudTh>メッセージ数</MudTh>
         <MudTh>処理中</MudTh>
@@ -33,6 +34,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd><MudChip T="string" Size="Size.Small" Color="@StateColor(context.State)">@context.State</MudChip></MudTd>
         <MudTd>@(context.VisibleMessages?.ToString() ?? "-")</MudTd>
         <MudTd>@(context.InFlightMessages?.ToString() ?? "-")</MudTd>

@@ -2,6 +2,7 @@ namespace CloudManager.Models.OracleCloud.Events;
 
 public sealed record EventRuleInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string? Description,
     bool IsEnabled,

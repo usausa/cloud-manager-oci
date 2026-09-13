@@ -17,19 +17,22 @@ public sealed class DnsService
         this.factory = factory;
     }
 
-    // Lists the global and private zones of the compartment
+    // Lists the global and private zones of the compartments in scope
     public async ValueTask<List<DnsZoneInfo>> ListZonesAsync(CancellationToken cancellationToken = default)
     {
         using var dns = factory.CreateDnsClient();
         var result = new List<DnsZoneInfo>();
         foreach (var scope in new[] { Scope.Global, Scope.Private })
         {
-            var zones = await OciPaging.ListAllAsync(
-                page => dns.ListZones(new ListZonesRequest { CompartmentId = factory.CompartmentId, Scope = scope, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage);
+            var zones = await factory.ListInScopeAsync(
+                compartmentId => OciPaging.ListAllAsync(
+                    page => dns.ListZones(new ListZonesRequest { CompartmentId = compartmentId, Scope = scope, Page = page }, cancellationToken: cancellationToken),
+                    static x => x.Items,
+                    static x => x.OpcNextPage),
+                cancellationToken);
             result.AddRange(zones.Select(static x => new DnsZoneInfo(
                 x.Id,
+                x.CompartmentId,
                 x.Name,
                 OciValues.State(x.ZoneType),
                 OciValues.State(x.Scope),

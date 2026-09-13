@@ -23,12 +23,12 @@ public sealed class IdentityDomainsService
         this.factory = factory;
     }
 
-    // Lists the identity domains of the compartment, falling back to the tenancy root
+    // Lists the identity domains of the compartments in scope, falling back to the tenancy root
     public async ValueTask<List<IdentityDomainInfo>> ListDomainsAsync(CancellationToken cancellationToken = default)
     {
         using var identity = factory.CreateIdentityClient();
-        var domains = await ListDomainsAsync(identity, factory.CompartmentId, cancellationToken);
-        if ((domains.Count == 0) && !String.Equals(factory.CompartmentId, factory.TenancyId, StringComparison.Ordinal))
+        var domains = await factory.ListInScopeAsync(compartmentId => ListDomainsAsync(identity, compartmentId, cancellationToken), cancellationToken);
+        if ((domains.Count == 0) && !factory.CompartmentIds.Contains(factory.TenancyId, StringComparer.Ordinal))
         {
             domains = await ListDomainsAsync(identity, factory.TenancyId, cancellationToken);
         }
@@ -106,6 +106,7 @@ public sealed class IdentityDomainsService
         return domains
             .Select(static x => new IdentityDomainInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 x.Url,
                 OciValues.State(x.Type),

@@ -17,20 +17,23 @@ public sealed class ContainerRegistryService
     // Registry host of the current region
     public string RegistryHost => $"{factory.Region.RegionCode}.ocir.io";
 
-    // Lists the container repositories of the compartment
+    // Lists the container repositories of the compartments in scope
     public async ValueTask<List<ContainerRepositoryInfo>> ListRepositoriesAsync(CancellationToken cancellationToken = default)
     {
         using var artifacts = factory.CreateArtifactsClient();
-        var repositories = await OciPaging.ListAllAsync(
-            page => artifacts.ListContainerRepositories(new ListContainerRepositoriesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.ContainerRepositoryCollection.Items,
-            static x => x.OpcNextPage);
+        var repositories = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => artifacts.ListContainerRepositories(new ListContainerRepositoriesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.ContainerRepositoryCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
         var host = RegistryHost;
 #pragma warning disable IDE0028
         return repositories
             .Select(x => new ContainerRepositoryInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 $"{host}/{x.Namespace}/{x.DisplayName}",
                 OciValues.State(x.LifecycleState),
@@ -43,14 +46,16 @@ public sealed class ContainerRegistryService
 #pragma warning restore IDE0028
     }
 
-    // Lists the images of a repository
+    // Lists the images of a repository; the name is unique in the tenancy, so the compartments in scope are searched
     public async ValueTask<List<ContainerImageInfo>> ListImagesAsync(string repositoryName, CancellationToken cancellationToken = default)
     {
         using var artifacts = factory.CreateArtifactsClient();
-        var images = await OciPaging.ListAllAsync(
-            page => artifacts.ListContainerImages(new ListContainerImagesRequest { CompartmentId = factory.CompartmentId, RepositoryName = repositoryName, Page = page }, cancellationToken: cancellationToken),
-            static x => x.ContainerImageCollection.Items,
-            static x => x.OpcNextPage);
+        var images = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => artifacts.ListContainerImages(new ListContainerImagesRequest { CompartmentId = compartmentId, RepositoryName = repositoryName, Page = page }, cancellationToken: cancellationToken),
+                static x => x.ContainerImageCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return images

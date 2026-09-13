@@ -24,6 +24,9 @@ public sealed class OciSession
     // The compartment path once loaded, otherwise the id
     public string CompartmentName { get; private set; }
 
+    // Compartments listed for the selection: itself and its descendants once loaded (the root covers the tenancy)
+    public IReadOnlyList<string> ScopeCompartmentIds { get; private set; }
+
     public IReadOnlyList<string> AvailableProfiles { get; }
 
     public IReadOnlyList<CompartmentInfo> Compartments { get; private set; } = [];
@@ -57,10 +60,12 @@ public sealed class OciSession
         TenancyId = IsProfileAvailable ? ProfileResolver.GetProfileValue(ProfileName, "tenancy") : null;
         CompartmentId = String.IsNullOrWhiteSpace(setting.DefaultCompartmentId) ? TenancyId ?? string.Empty : setting.DefaultCompartmentId;
         CompartmentName = CompartmentId;
+        ScopeCompartmentIds = [CompartmentId];
     }
 
     // Resolved lazily so that a broken profile only fails when a call is made
-    public OciContext ResolveContext() => context ??= ProfileResolver.Resolve(ProfileName, Region?.RegionId, CompartmentId);
+    public OciContext ResolveContext() =>
+        context ??= ProfileResolver.Resolve(ProfileName, Region?.RegionId, CompartmentId) with { CompartmentIds = ScopeCompartmentIds };
 
     // Switches the profile and region, throwing when they cannot be resolved
     public void SetProfile(string profileName, string? regionId)
@@ -71,6 +76,7 @@ public sealed class OciSession
         TenancyId = resolved.TenancyId;
         CompartmentId = resolved.CompartmentId;
         CompartmentName = CompartmentId;
+        ScopeCompartmentIds = [CompartmentId];
         Compartments = [];
         AvailableRegions = [];
         IsLoaded = false;
@@ -87,8 +93,7 @@ public sealed class OciSession
         }
 
         CompartmentId = compartmentId;
-        CompartmentName = Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Path ?? compartmentId;
-        context = null;
+        UpdateScope();
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -114,13 +119,21 @@ public sealed class OciSession
 #pragma warning disable IDE0028
             AvailableRegions = regions.Select(static x => x.RegionName).ToList();
 #pragma warning restore IDE0028
-            CompartmentName = compartments.FirstOrDefault(x => x.Id == CompartmentId)?.Path ?? CompartmentId;
+            UpdateScope();
             IsLoaded = true;
         }
         finally
         {
             loading = null;
         }
+    }
+
+    // The name and scope follow the loaded compartment tree; the context is rebuilt on the next call
+    private void UpdateScope()
+    {
+        CompartmentName = Compartments.FirstOrDefault(x => x.Id == CompartmentId)?.Path ?? CompartmentId;
+        ScopeCompartmentIds = CompartmentScope.Subtree(Compartments, CompartmentId);
+        context = null;
     }
 
     private static IReadOnlyList<string> LoadProfiles(ILogger<OciSession> log)

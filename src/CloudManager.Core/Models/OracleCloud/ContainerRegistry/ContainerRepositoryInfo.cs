@@ -3,6 +3,7 @@ namespace CloudManager.Models.OracleCloud.ContainerRegistry;
 // Address is the pull path without a tag ({region}.ocir.io/{namespace}/{name})
 public sealed record ContainerRepositoryInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string Address,
     string State,

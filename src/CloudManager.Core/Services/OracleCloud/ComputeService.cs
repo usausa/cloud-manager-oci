@@ -21,24 +21,26 @@ public sealed class ComputeService
         this.factory = factory;
     }
 
-    // Lists the instances of the compartment with their primary VNIC addresses
+    // Lists the instances of the compartments in scope with their primary VNIC addresses
     public async ValueTask<List<ComputeInstanceInfo>> ListInstancesAsync(string? state, string? tag, CancellationToken cancellationToken = default)
     {
         using var compute = factory.CreateComputeClient();
         using var network = factory.CreateVirtualNetworkClient();
-        var compartmentId = factory.CompartmentId;
+        var lifecycleState = OciValues.ParseState<Instance.LifecycleStateEnum>(state);
 
-        var instances = await OciPaging.ListAllAsync(
-            page => compute.ListInstances(
-                new ListInstancesRequest
-                {
-                    CompartmentId = compartmentId,
-                    LifecycleState = OciValues.ParseState<Instance.LifecycleStateEnum>(state),
-                    Page = page
-                },
-                cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var instances = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => compute.ListInstances(
+                    new ListInstancesRequest
+                    {
+                        CompartmentId = compartmentId,
+                        LifecycleState = lifecycleState,
+                        Page = page
+                    },
+                    cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
         if (!String.IsNullOrWhiteSpace(tag))
         {
@@ -51,7 +53,7 @@ public sealed class ComputeService
             }
         }
 
-        var addresses = await ResolveAddressesAsync(compute, network, compartmentId, instances, cancellationToken);
+        var addresses = await ResolveAddressesAsync(compute, network, instances, cancellationToken);
 
 #pragma warning disable IDE0028
         return instances
@@ -60,6 +62,7 @@ public sealed class ComputeService
                 var address = addresses.GetValueOrDefault(x.Id);
                 return new ComputeInstanceInfo(
                     x.Id,
+                    x.CompartmentId,
                     x.DisplayName,
                     OciValues.State(x.LifecycleState),
                     x.Shape,
@@ -122,13 +125,17 @@ public sealed class ComputeService
     // Runs a shell script through the compute instance agent and waits for the text output
     public async ValueTask<RunCommandResult> RunCommandAsync(string instanceId, string command, int timeoutSeconds, IProgress<ProgressUpdate> progress, CancellationToken cancellationToken = default)
     {
+        using var compute = factory.CreateComputeClient();
         using var agent = factory.CreateComputeInstanceAgentClient();
+
+        // The command is created in the compartment of the instance
+        var instance = await compute.GetInstance(new GetInstanceRequest { InstanceId = instanceId }, cancellationToken: cancellationToken);
         var created = await agent.CreateInstanceAgentCommand(
             new CreateInstanceAgentCommandRequest
             {
                 CreateInstanceAgentCommandDetails = new CreateInstanceAgentCommandDetails
                 {
-                    CompartmentId = factory.CompartmentId,
+                    CompartmentId = instance.Instance.CompartmentId,
                     DisplayName = $"cloudmanager-{DateTime.UtcNow:yyyyMMddHHmmss}",
                     ExecutionTimeOutInSeconds = timeoutSeconds,
                     Target = new InstanceAgentCommandTarget { InstanceId = instanceId },
@@ -186,8 +193,8 @@ public sealed class ComputeService
             progress,
             cancellationToken);
 
-    // Looks up the primary VNIC of each instance with bounded parallelism
-    private static async ValueTask<Dictionary<string, Vnic>> ResolveAddressesAsync(ComputeClient compute, VirtualNetworkClient network, string compartmentId, List<Instance> instances, CancellationToken cancellationToken)
+    // Looks up the primary VNIC of each instance with bounded parallelism; attachments are listed per compartment
+    private static async ValueTask<Dictionary<string, Vnic>> ResolveAddressesAsync(ComputeClient compute, VirtualNetworkClient network, List<Instance> instances, CancellationToken cancellationToken)
     {
         var result = new Dictionary<string, Vnic>(StringComparer.Ordinal);
         if (instances.Count == 0)
@@ -195,29 +202,29 @@ public sealed class ComputeService
             return result;
         }
 
-        var attachments = await OciPaging.ListAllAsync(
-            page => compute.ListVnicAttachments(new ListVnicAttachmentsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var attachmentLists = await OciParallel.MapAsync(
+            instances.Select(static x => x.CompartmentId).Distinct(StringComparer.Ordinal),
+            MaxParallelLookups,
+            compartmentId => OciPaging.ListAllAsync(
+                page => compute.ListVnicAttachments(new ListVnicAttachmentsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
         var instanceIds = instances.Select(static x => x.Id).ToHashSet(StringComparer.Ordinal);
-        var targets = attachments
+        var targets = attachmentLists
+            .SelectMany(static x => x)
             .Where(x => (x.LifecycleState == VnicAttachment.LifecycleStateEnum.Attached) && instanceIds.Contains(x.InstanceId))
             .ToList();
 
-        using var semaphore = new SemaphoreSlim(MaxParallelLookups);
-        var vnics = await Task.WhenAll(targets.Select(async attachment =>
-        {
-            await semaphore.WaitAsync(cancellationToken);
-            try
+        var vnics = await OciParallel.MapAsync(
+            targets,
+            MaxParallelLookups,
+            async attachment =>
             {
                 var response = await network.GetVnic(new GetVnicRequest { VnicId = attachment.VnicId }, cancellationToken: cancellationToken);
                 return (attachment.InstanceId, response.Vnic);
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }));
+            },
+            cancellationToken);
 
         foreach (var (instanceId, vnic) in vnics)
         {

@@ -17,14 +17,16 @@ public sealed class QueueService
         this.factory = factory;
     }
 
-    // Lists the queues of the compartment with their settings and statistics
+    // Lists the queues of the compartments in scope with their settings and statistics
     public async ValueTask<List<QueueInfo>> ListQueuesAsync(CancellationToken cancellationToken = default)
     {
         using var admin = factory.CreateQueueAdminClient();
-        var queues = await OciPaging.ListAllAsync(
-            page => admin.ListQueues(new ListQueuesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.QueueCollection.Items,
-            static x => x.OpcNextPage);
+        var queues = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => admin.ListQueues(new ListQueuesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.QueueCollection.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
         var result = new List<QueueInfo>();
         foreach (var summary in queues)
@@ -40,6 +42,7 @@ public sealed class QueueService
 
             result.Add(new QueueInfo(
                 queue.Id,
+                queue.CompartmentId,
                 queue.DisplayName,
                 OciValues.State(queue.LifecycleState),
                 queue.MessagesEndpoint,

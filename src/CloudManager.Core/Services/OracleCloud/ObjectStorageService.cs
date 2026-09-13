@@ -31,15 +31,17 @@ public sealed class ObjectStorageService
     public ValueTask<string> GetNamespaceAsync(CancellationToken cancellationToken = default) =>
         factory.GetNamespaceAsync(cancellationToken);
 
-    // Lists the buckets of the compartment
+    // Lists the buckets of the compartments in scope
     public async ValueTask<List<BucketInfo>> ListBucketsAsync(CancellationToken cancellationToken = default)
     {
         var namespaceName = await factory.GetNamespaceAsync(cancellationToken);
         using var storage = factory.CreateObjectStorageClient();
-        var buckets = await OciPaging.ListAllAsync(
-            page => storage.ListBuckets(new ListBucketsRequest { NamespaceName = namespaceName, CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var buckets = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => storage.ListBuckets(new ListBucketsRequest { NamespaceName = namespaceName, CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return buckets

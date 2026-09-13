@@ -50,13 +50,13 @@ public sealed class ResourceSearchService
         return result;
     }
 
-    // Counts resources of the given types by state, optionally within one compartment
-    public async ValueTask<List<ResourceStateCount>> CountByStateAsync(IEnumerable<string> resourceTypes, string? compartmentId, CancellationToken cancellationToken = default)
+    // Counts resources of the given types by state, optionally within the given compartments
+    public async ValueTask<List<ResourceStateCount>> CountByStateAsync(IEnumerable<string> resourceTypes, IReadOnlyCollection<string>? compartmentIds, CancellationToken cancellationToken = default)
     {
         var query = $"query {String.Join(", ", resourceTypes)} resources";
-        if (!String.IsNullOrEmpty(compartmentId))
+        if (compartmentIds is { Count: > 0 })
         {
-            query += $" where compartmentId = '{compartmentId}'";
+            query += $" where {String.Join(" || ", compartmentIds.Select(static x => $"compartmentId = '{x}'"))}";
         }
 
         var resources = await SearchAsync(query, MaxResults, cancellationToken);

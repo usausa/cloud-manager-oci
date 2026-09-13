@@ -19,35 +19,33 @@ public sealed class EventsService
         this.factory = factory;
     }
 
-    // Lists the rules of the compartment with their actions
+    // Lists the rules of the compartments in scope with their actions
     public async ValueTask<List<EventRuleInfo>> ListRulesAsync(CancellationToken cancellationToken = default)
     {
         using var events = factory.CreateEventsClient();
-        var rules = await OciPaging.ListAllAsync(
-            page => events.ListRules(new ListRulesRequest { CompartmentId = factory.CompartmentId, Page = page }, cancellationToken: cancellationToken),
-            static x => x.Items,
-            static x => x.OpcNextPage);
+        var rules = await factory.ListInScopeAsync(
+            compartmentId => OciPaging.ListAllAsync(
+                page => events.ListRules(new ListRulesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage),
+            cancellationToken);
 
         // Actions are only available on the full rule
-        using var semaphore = new SemaphoreSlim(MaxParallelLookups);
-        var details = await Task.WhenAll(rules.Select(async rule =>
-        {
-            await semaphore.WaitAsync(cancellationToken);
-            try
+        var details = await OciParallel.MapAsync(
+            rules,
+            MaxParallelLookups,
+            async rule =>
             {
                 var response = await events.GetRule(new GetRuleRequest { RuleId = rule.Id }, cancellationToken: cancellationToken);
                 return response.Rule;
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }));
+            },
+            cancellationToken);
 
 #pragma warning disable IDE0028
         return details
             .Select(static x => new EventRuleInfo(
                 x.Id,
+                x.CompartmentId,
                 x.DisplayName,
                 x.Description,
                 x.IsEnabled ?? false,

@@ -2,6 +2,7 @@ namespace CloudManager.Models.OracleCloud.AutonomousDatabase;
 
 public sealed record AutonomousDatabaseInfo(
     string Id,
+    string CompartmentId,
     string DisplayName,
     string DbName,
     string State,

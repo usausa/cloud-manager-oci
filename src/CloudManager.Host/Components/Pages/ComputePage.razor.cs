@@ -132,6 +132,7 @@ public sealed partial class ComputePage
             {
                 { x => x.Title, instance.DisplayName },
                 { x => x.Namespace, "oci_computeagent" },
+                { x => x.CompartmentId, instance.CompartmentId },
                 { x => x.ResourceId, instance.Id },
                 { x => x.Metrics, MetricNames },
                 { x => x.Unit, "%" }
