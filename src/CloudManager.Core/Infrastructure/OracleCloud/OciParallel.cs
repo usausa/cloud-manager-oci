@@ -9,19 +9,13 @@ public static class OciParallel
         Func<TSource, ValueTask<TResult>> map,
         CancellationToken cancellationToken)
     {
-        using var semaphore = new SemaphoreSlim(maxParallel);
-        var results = await Task.WhenAll(source.Select(async item =>
+        var items = source.ToList();
+        var results = new TResult[items.Count];
+        var options = new ParallelOptions { MaxDegreeOfParallelism = maxParallel, CancellationToken = cancellationToken };
+        await Parallel.ForEachAsync(Enumerable.Range(0, items.Count), options, async (index, _) =>
         {
-            await semaphore.WaitAsync(cancellationToken);
-            try
-            {
-                return await map(item);
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }));
+            results[index] = await map(items[index]);
+        });
         return [.. results];
     }
 }

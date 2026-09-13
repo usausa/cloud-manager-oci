@@ -28,16 +28,16 @@ public sealed class LoadBalancerService
         using var nlb = factory.CreateNetworkLoadBalancerClient();
 
         var loadBalancers = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => lb.ListLoadBalancers(new ListLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            lb,
+            (client, compartmentId, page) => client.ListLoadBalancers(new ListLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
         var networkLoadBalancers = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => nlb.ListNetworkLoadBalancers(new Nlb.ListNetworkLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.NetworkLoadBalancerCollection.Items,
-                static x => x.OpcNextPage),
+            nlb,
+            (client, compartmentId, page) => client.ListNetworkLoadBalancers(new Nlb.ListNetworkLoadBalancersRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.NetworkLoadBalancerCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
         var result = loadBalancers

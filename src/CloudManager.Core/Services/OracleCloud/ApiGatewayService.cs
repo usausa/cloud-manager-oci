@@ -21,10 +21,10 @@ public sealed class ApiGatewayService
     {
         using var gateway = factory.CreateGatewayClient();
         var gateways = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => gateway.ListGateways(new ListGatewaysRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.GatewayCollection.Items,
-                static x => x.OpcNextPage),
+            gateway,
+            (client, compartmentId, page) => client.ListGateways(new ListGatewaysRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.GatewayCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028
@@ -47,10 +47,10 @@ public sealed class ApiGatewayService
     {
         using var deployment = factory.CreateDeploymentClient();
         var deployments = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => deployment.ListDeployments(new ListDeploymentsRequest { CompartmentId = compartmentId, GatewayId = gatewayId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.DeploymentCollection.Items,
-                static x => x.OpcNextPage),
+            deployment,
+            (client, compartmentId, page) => client.ListDeployments(new ListDeploymentsRequest { CompartmentId = compartmentId, GatewayId = gatewayId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.DeploymentCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

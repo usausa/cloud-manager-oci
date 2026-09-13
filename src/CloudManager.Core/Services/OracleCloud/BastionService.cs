@@ -3,7 +3,6 @@ namespace CloudManager.Services.OracleCloud;
 using CloudManager.Infrastructure.OracleCloud;
 using CloudManager.Models.OracleCloud.Bastion;
 
-using Oci.BastionService;
 using Oci.BastionService.Models;
 using Oci.BastionService.Requests;
 
@@ -26,10 +25,10 @@ public sealed class BastionService
     {
         using var bastion = factory.CreateBastionClient();
         var bastions = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => bastion.ListBastions(new ListBastionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            bastion,
+            (client, compartmentId, page) => client.ListBastions(new ListBastionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

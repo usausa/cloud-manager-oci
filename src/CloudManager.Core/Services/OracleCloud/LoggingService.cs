@@ -27,10 +27,10 @@ public sealed class LoggingService
     {
         using var logging = factory.CreateLoggingManagementClient();
         var groups = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => logging.ListLogGroups(new ListLogGroupsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            logging,
+            (client, compartmentId, page) => client.ListLogGroups(new ListLogGroupsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

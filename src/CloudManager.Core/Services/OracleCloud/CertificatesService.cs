@@ -19,10 +19,10 @@ public sealed class CertificatesService
     {
         using var certificates = factory.CreateCertificatesManagementClient();
         var items = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => certificates.ListCertificates(new ListCertificatesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.CertificateCollection.Items,
-                static x => x.OpcNextPage),
+            certificates,
+            (client, compartmentId, page) => client.ListCertificates(new ListCertificatesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.CertificateCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
         var now = DateTime.UtcNow;

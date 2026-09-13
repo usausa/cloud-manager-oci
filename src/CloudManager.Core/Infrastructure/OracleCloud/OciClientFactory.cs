@@ -85,6 +85,16 @@ public sealed class OciClientFactory
         return [.. results.SelectMany(static x => x)];
     }
 
+    // Lists every page of a compartment-scoped operation in every compartment in scope; the client is passed
+    // through so that the deferred fetch does not have to capture a disposable local
+    public ValueTask<List<TItem>> ListInScopeAsync<TClient, TResponse, TItem>(
+        TClient client,
+        Func<TClient, string, string?, Task<TResponse>> fetch,
+        Func<TResponse, IEnumerable<TItem>?> items,
+        Func<TResponse, string?> nextPage,
+        CancellationToken cancellationToken) =>
+        ListInScopeAsync(compartmentId => OciPaging.ListAllAsync(page => fetch(client, compartmentId, page), items, nextPage), cancellationToken);
+
     private OciContext Resolve() => resolver();
 
     // The client region follows the resolved context, not the profile default

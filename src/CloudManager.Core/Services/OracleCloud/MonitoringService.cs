@@ -23,16 +23,16 @@ public sealed class MonitoringService
         using var monitoring = factory.CreateMonitoringClient();
 
         var alarms = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => monitoring.ListAlarms(new ListAlarmsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            monitoring,
+            (client, compartmentId, page) => client.ListAlarms(new ListAlarmsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
         var statuses = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => monitoring.ListAlarmsStatus(new ListAlarmsStatusRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            monitoring,
+            (client, compartmentId, page) => client.ListAlarmsStatus(new ListAlarmsStatusRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
         var statusById = statuses.ToDictionary(static x => x.Id, static x => x, StringComparer.Ordinal);
 

@@ -27,5 +27,11 @@ public sealed partial class CompartmentSelector
         }
     }
 
-    private void OnCompartmentChanged(string compartmentId) => Session.SetCompartment(compartmentId);
+    private void OnCompartmentChanged(string? compartmentId)
+    {
+        if (!String.IsNullOrEmpty(compartmentId))
+        {
+            Session.SetCompartment(compartmentId);
+        }
+    }
 }

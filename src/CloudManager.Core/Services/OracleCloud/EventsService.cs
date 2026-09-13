@@ -24,10 +24,10 @@ public sealed class EventsService
     {
         using var events = factory.CreateEventsClient();
         var rules = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => events.ListRules(new ListRulesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            events,
+            (client, compartmentId, page) => client.ListRules(new ListRulesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
         // Actions are only available on the full rule

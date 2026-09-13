@@ -25,10 +25,10 @@ public sealed class NosqlService
     {
         using var nosql = factory.CreateNosqlClient();
         var tables = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => nosql.ListTables(new ListTablesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.TableCollection.Items,
-                static x => x.OpcNextPage),
+            nosql,
+            (client, compartmentId, page) => client.ListTables(new ListTablesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.TableCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

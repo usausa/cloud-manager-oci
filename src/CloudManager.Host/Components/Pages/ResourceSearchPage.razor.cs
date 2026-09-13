@@ -1,7 +1,5 @@
 namespace CloudManager.Host.Components.Pages;
 
-using CloudManager.Host.Infrastructure.Components;
-
 using Microsoft.AspNetCore.Components;
 
 public sealed partial class ResourceSearchPage
@@ -27,11 +25,11 @@ public sealed partial class ResourceSearchPage
 
     private bool IsTenancyScope => String.Equals(Session.CompartmentId, Session.TenancyId, StringComparison.Ordinal);
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         compartmentOnly = !IsTenancyScope;
         query = BuildQuery();
-        await LoadAsync(async () =>
+        return LoadAsync(async () =>
         {
             resourceTypes = await Service.ListResourceTypesAsync(CancellationToken);
         });
@@ -53,9 +51,9 @@ public sealed partial class ResourceSearchPage
             searched = true;
         });
 
-    private void OnResourceTypeChanged(string value)
+    private void OnResourceTypeChanged(string? value)
     {
-        resourceType = value;
+        resourceType = value ?? AllTypes;
         query = BuildQuery();
     }
 

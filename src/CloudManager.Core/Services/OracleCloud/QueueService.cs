@@ -22,10 +22,10 @@ public sealed class QueueService
     {
         using var admin = factory.CreateQueueAdminClient();
         var queues = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => admin.ListQueues(new ListQueuesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.QueueCollection.Items,
-                static x => x.OpcNextPage),
+            admin,
+            (client, compartmentId, page) => client.ListQueues(new ListQueuesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.QueueCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
         var result = new List<QueueInfo>();

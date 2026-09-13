@@ -25,10 +25,10 @@ public sealed class FunctionsService
     {
         using var management = factory.CreateFunctionsManagementClient();
         var applications = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => management.ListApplications(new ListApplicationsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            management,
+            (client, compartmentId, page) => client.ListApplications(new ListApplicationsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

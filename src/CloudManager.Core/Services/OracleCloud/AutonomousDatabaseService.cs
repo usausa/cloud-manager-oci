@@ -22,10 +22,10 @@ public sealed class AutonomousDatabaseService
     {
         using var database = factory.CreateDatabaseClient();
         var databases = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => database.ListAutonomousDatabases(new ListAutonomousDatabasesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            database,
+            (client, compartmentId, page) => client.ListAutonomousDatabases(new ListAutonomousDatabasesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

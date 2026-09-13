@@ -2,8 +2,6 @@ namespace CloudManager.Host.Components.Pages;
 
 using CloudManager.Host.Infrastructure.Components;
 
-using Microsoft.AspNetCore.Components;
-
 public sealed partial class SettingsPage
 {
     private string selectedProfile = string.Empty;

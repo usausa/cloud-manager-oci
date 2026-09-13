@@ -18,12 +18,12 @@ public sealed class ContainerInstanceService
     // Lists the container instances of the compartments in scope
     public async ValueTask<List<ContainerInstanceInfo>> ListAsync(CancellationToken cancellationToken = default)
     {
-        using var client = factory.CreateContainerInstanceClient();
+        using var containers = factory.CreateContainerInstanceClient();
         var instances = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => client.ListContainerInstances(new ListContainerInstancesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.ContainerInstanceCollection.Items,
-                static x => x.OpcNextPage),
+            containers,
+            (client, compartmentId, page) => client.ListContainerInstances(new ListContainerInstancesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.ContainerInstanceCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

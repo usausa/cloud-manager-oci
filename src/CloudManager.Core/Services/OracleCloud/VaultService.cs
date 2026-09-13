@@ -23,10 +23,10 @@ public sealed class VaultService
     {
         using var vaults = factory.CreateVaultsClient();
         var secrets = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => vaults.ListSecrets(new ListSecretsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            vaults,
+            (client, compartmentId, page) => client.ListSecrets(new ListSecretsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

@@ -25,10 +25,10 @@ public sealed class DnsService
         foreach (var scope in new[] { Scope.Global, Scope.Private })
         {
             var zones = await factory.ListInScopeAsync(
-                compartmentId => OciPaging.ListAllAsync(
-                    page => dns.ListZones(new ListZonesRequest { CompartmentId = compartmentId, Scope = scope, Page = page }, cancellationToken: cancellationToken),
-                    static x => x.Items,
-                    static x => x.OpcNextPage),
+                dns,
+                (client, compartmentId, page) => client.ListZones(new ListZonesRequest { CompartmentId = compartmentId, Scope = scope, Page = page }, cancellationToken: cancellationToken),
+                static x => x.Items,
+                static x => x.OpcNextPage,
                 cancellationToken);
             result.AddRange(zones.Select(static x => new DnsZoneInfo(
                 x.Id,

@@ -159,7 +159,7 @@ public sealed partial class Home
     private static string FormatAmount(decimal? value) =>
         value?.ToString("N2", CultureInfo.InvariantCulture) ?? "-";
 
-    private static int Count(List<ResourceStateCount> counts, string resourceType, string state) =>
+    private static int Count(IEnumerable<ResourceStateCount> counts, string resourceType, string state) =>
         counts
             .Where(x => String.Equals(x.ResourceType, resourceType, StringComparison.OrdinalIgnoreCase) && (x.State == state))
             .Sum(static x => x.Count);

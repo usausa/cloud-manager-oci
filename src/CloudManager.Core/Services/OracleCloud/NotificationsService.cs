@@ -22,16 +22,16 @@ public sealed class NotificationsService
         using var data = factory.CreateNotificationDataPlaneClient();
 
         var topics = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => control.ListTopics(new ListTopicsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            control,
+            (client, compartmentId, page) => client.ListTopics(new ListTopicsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
         var subscriptions = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => data.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            data,
+            (client, compartmentId, page) => client.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
         var countByTopic = subscriptions
             .GroupBy(static x => x.TopicId, StringComparer.Ordinal)
@@ -57,10 +57,10 @@ public sealed class NotificationsService
     {
         using var data = factory.CreateNotificationDataPlaneClient();
         var subscriptions = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => data.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, TopicId = topicId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            data,
+            (client, compartmentId, page) => client.ListSubscriptions(new ListSubscriptionsRequest { CompartmentId = compartmentId, TopicId = topicId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

@@ -22,10 +22,10 @@ public sealed class ContainerRegistryService
     {
         using var artifacts = factory.CreateArtifactsClient();
         var repositories = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => artifacts.ListContainerRepositories(new ListContainerRepositoriesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.ContainerRepositoryCollection.Items,
-                static x => x.OpcNextPage),
+            artifacts,
+            (client, compartmentId, page) => client.ListContainerRepositories(new ListContainerRepositoriesRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.ContainerRepositoryCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
         var host = RegistryHost;
@@ -51,10 +51,10 @@ public sealed class ContainerRegistryService
     {
         using var artifacts = factory.CreateArtifactsClient();
         var images = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => artifacts.ListContainerImages(new ListContainerImagesRequest { CompartmentId = compartmentId, RepositoryName = repositoryName, Page = page }, cancellationToken: cancellationToken),
-                static x => x.ContainerImageCollection.Items,
-                static x => x.OpcNextPage),
+            artifacts,
+            (client, compartmentId, page) => client.ListContainerImages(new ListContainerImagesRequest { CompartmentId = compartmentId, RepositoryName = repositoryName, Page = page }, cancellationToken: cancellationToken),
+            static x => x.ContainerImageCollection.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

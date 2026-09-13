@@ -20,18 +20,18 @@ public sealed class PublicIpService
     {
         using var network = factory.CreateVirtualNetworkClient();
         var publicIps = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => network.ListPublicIps(
-                    new ListPublicIpsRequest
-                    {
-                        CompartmentId = compartmentId,
-                        Scope = ListPublicIpsRequest.ScopeEnum.Region,
-                        Lifetime = ListPublicIpsRequest.LifetimeEnum.Reserved,
-                        Page = page
-                    },
-                    cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            network,
+            (client, compartmentId, page) => client.ListPublicIps(
+                new ListPublicIpsRequest
+                {
+                    CompartmentId = compartmentId,
+                    Scope = ListPublicIpsRequest.ScopeEnum.Region,
+                    Lifetime = ListPublicIpsRequest.LifetimeEnum.Reserved,
+                    Page = page
+                },
+                cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028

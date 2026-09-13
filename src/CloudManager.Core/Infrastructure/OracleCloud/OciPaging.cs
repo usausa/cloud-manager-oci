@@ -26,4 +26,12 @@ public static class OciPaging
 
         return result;
     }
+
+    // The client is passed through so that a deferred fetch does not have to capture a disposable local
+    public static ValueTask<List<TItem>> ListAllAsync<TClient, TResponse, TItem>(
+        TClient client,
+        Func<TClient, string?, Task<TResponse>> fetch,
+        Func<TResponse, IEnumerable<TItem>?> items,
+        Func<TResponse, string?> nextPage) =>
+        ListAllAsync(page => fetch(client, page), items, nextPage);
 }

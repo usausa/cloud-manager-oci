@@ -19,10 +19,10 @@ public sealed class VcnService
     {
         using var network = factory.CreateVirtualNetworkClient();
         var vcns = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => network.ListVcns(new ListVcnsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            network,
+            (client, compartmentId, page) => client.ListVcns(new ListVcnsRequest { CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028
@@ -50,31 +50,38 @@ public sealed class VcnService
         var compartmentId = vcn.CompartmentId;
 
         var subnetsTask = OciPaging.ListAllAsync(
-            page => network.ListSubnets(new ListSubnetsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListSubnets(new ListSubnetsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         var routeTablesTask = OciPaging.ListAllAsync(
-            page => network.ListRouteTables(new ListRouteTablesRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListRouteTables(new ListRouteTablesRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         var securityListsTask = OciPaging.ListAllAsync(
-            page => network.ListSecurityLists(new ListSecurityListsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListSecurityLists(new ListSecurityListsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         var nsgsTask = OciPaging.ListAllAsync(
-            page => network.ListNetworkSecurityGroups(new ListNetworkSecurityGroupsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListNetworkSecurityGroups(new ListNetworkSecurityGroupsRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         var igwsTask = OciPaging.ListAllAsync(
-            page => network.ListInternetGateways(new ListInternetGatewaysRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListInternetGateways(new ListInternetGatewaysRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         var natsTask = OciPaging.ListAllAsync(
-            page => network.ListNatGateways(new ListNatGatewaysRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListNatGateways(new ListNatGatewaysRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         var sgwsTask = OciPaging.ListAllAsync(
-            page => network.ListServiceGateways(new ListServiceGatewaysRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
+            network,
+            (client, page) => client.ListServiceGateways(new ListServiceGatewaysRequest { CompartmentId = compartmentId, VcnId = vcnId, Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage).AsTask();
         await Task.WhenAll(subnetsTask, routeTablesTask, securityListsTask, nsgsTask, igwsTask, natsTask, sgwsTask);

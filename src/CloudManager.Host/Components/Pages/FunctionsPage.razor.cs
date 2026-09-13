@@ -36,12 +36,12 @@ public sealed partial class FunctionsPage
             functions = selectedApplicationId is null ? [] : await Service.ListFunctionsAsync(selectedApplicationId, CancellationToken);
         });
 
-    private Task OnApplicationSelectedAsync(string applicationId)
+    private Task OnApplicationSelectedAsync(string? applicationId)
     {
         selectedApplicationId = applicationId;
         return LoadAsync(async () =>
         {
-            functions = await Service.ListFunctionsAsync(applicationId, CancellationToken);
+            functions = applicationId is null ? [] : await Service.ListFunctionsAsync(applicationId, CancellationToken);
         });
     }
 

@@ -37,10 +37,10 @@ public sealed class ObjectStorageService
         var namespaceName = await factory.GetNamespaceAsync(cancellationToken);
         using var storage = factory.CreateObjectStorageClient();
         var buckets = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => storage.ListBuckets(new ListBucketsRequest { NamespaceName = namespaceName, CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            storage,
+            (client, compartmentId, page) => client.ListBuckets(new ListBucketsRequest { NamespaceName = namespaceName, CompartmentId = compartmentId, Page = page }, cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
 #pragma warning disable IDE0028
@@ -233,21 +233,17 @@ public sealed class ObjectStorageService
 
         var names = objectNames.ToList();
         var deleted = 0;
-        using var semaphore = new SemaphoreSlim(MaxParallelDeletes);
-        await Task.WhenAll(names.Select(async name =>
-        {
-            await semaphore.WaitAsync(cancellationToken);
-            try
+        await OciParallel.MapAsync(
+            names,
+            MaxParallelDeletes,
+            async name =>
             {
                 await storage.DeleteObject(new DeleteObjectRequest { NamespaceName = namespaceName, BucketName = bucketName, ObjectName = name }, cancellationToken: cancellationToken);
                 var count = Interlocked.Increment(ref deleted);
                 progress?.Report(new ProgressUpdate((double)count / names.Count, $"{count} / {names.Count}"));
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }));
+                return count;
+            },
+            cancellationToken);
     }
 
     // Deletes every object under the prefix

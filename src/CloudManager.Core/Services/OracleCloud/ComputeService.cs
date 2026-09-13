@@ -29,17 +29,17 @@ public sealed class ComputeService
         var lifecycleState = OciValues.ParseState<Instance.LifecycleStateEnum>(state);
 
         var instances = await factory.ListInScopeAsync(
-            compartmentId => OciPaging.ListAllAsync(
-                page => compute.ListInstances(
-                    new ListInstancesRequest
-                    {
-                        CompartmentId = compartmentId,
-                        LifecycleState = lifecycleState,
-                        Page = page
-                    },
-                    cancellationToken: cancellationToken),
-                static x => x.Items,
-                static x => x.OpcNextPage),
+            compute,
+            (client, compartmentId, page) => client.ListInstances(
+                new ListInstancesRequest
+                {
+                    CompartmentId = compartmentId,
+                    LifecycleState = lifecycleState,
+                    Page = page
+                },
+                cancellationToken: cancellationToken),
+            static x => x.Items,
+            static x => x.OpcNextPage,
             cancellationToken);
 
         if (!String.IsNullOrWhiteSpace(tag))
