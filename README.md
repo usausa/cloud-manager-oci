@@ -3,6 +3,8 @@
 ローカルの OCI プロファイルを使って Oracle Cloud Infrastructure のリソースを閲覧・操作する Web コンソールです。
 プロファイル、リージョン、コンパートメントを切り替えながら、Compute / Autonomous Database / Object Storage などのサービスを確認し、日常的な操作を実行し、cron で定期ジョブをスケジュールできます。
 
+![Dashboard](docs/images/dashboard.png)
+
 ## ✨ 機能
 
 | サービス | 一覧 | 操作 |
