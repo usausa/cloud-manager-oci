@@ -1,0 +1,79 @@
+@page "/cost"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Cost</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">コスト</MudText>
+    <MudSpacer />
+    <MudSelect T="int" Value="year" ValueChanged="OnYearChangedAsync" Label="年" Variant="Variant.Outlined" Margin="Margin.Dense" Class="filter-select">
+        @foreach (var y in Years)
+        {
+            <MudSelectItem Value="@y">@y</MudSelectItem>
+        }
+    </MudSelect>
+    <MudSelect T="int" Value="month" ValueChanged="OnMonthChangedAsync" Label="月" Variant="Variant.Outlined" Margin="Margin.Dense" Class="filter-select">
+        @foreach (var m in Months)
+        {
+            <MudSelectItem Value="@m">@m 月</MudSelectItem>
+        }
+    </MudSelect>
+    <MudSwitch T="bool" Value="compartmentOnly" ValueChanged="OnScopeChangedAsync" Color="Color.Primary" Label="現在のコンパートメントのみ" Disabled="IsTenancyScope" />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudGrid Spacing="2" Class="mb-2">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-3">
+            @if (IsLoading)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" />
+            }
+            else
+            {
+                <MudText Typo="Typo.subtitle2">@year 年 @month 月 合計</MudText>
+                <MudText Typo="Typo.h4" Color="Color.Primary">@FormatAmount(total)</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@(compartmentOnly ? Session.CompartmentName : "テナンシ全体") / @currency</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Spacing="2">
+    <MudItem xs="12" md="5">
+        <MudText Typo="Typo.subtitle2" Class="mb-1">サービス別</MudText>
+        <MudTable T="CostByServiceInfo" Items="byService" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>サービス</MudTh>
+                <MudTh Style="text-align: right">金額</MudTh>
+                <MudTh Style="text-align: right">数量</MudTh>
+                <MudTh>通貨</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Service</MudTd>
+                <MudTd Style="text-align: right">@FormatAmount(context.Amount)</MudTd>
+                <MudTd Style="text-align: right">@context.Quantity.ToString("N2", CultureInfo.InvariantCulture)</MudTd>
+                <MudTd>@context.Currency</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+            <NoRecordsContent><MudText>コストデータがありません。</MudText></NoRecordsContent>
+        </MudTable>
+    </MudItem>
+    <MudItem xs="12" md="7">
+        <MudText Typo="Typo.subtitle2" Class="mb-1">日次推移</MudText>
+        <MudPaper Class="pa-3">
+            @if (IsLoading)
+            {
+                <MudProgressCircular Indeterminate="true" />
+            }
+            else
+            {
+                <MetricsChart Title="@($"{year}/{month:00}")" Unit="@currency" Series="dailySeries" LabelFormat="MM/dd" />
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>

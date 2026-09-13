@@ -1,0 +1,86 @@
+namespace CloudManager.Host.Components.Pages;
+
+using CloudManager.Host.Infrastructure.Components;
+
+using Microsoft.AspNetCore.Components;
+
+public sealed partial class ResourceSearchPage
+{
+    private const string AllTypes = "all";
+
+    private List<string> resourceTypes = [];
+
+    private List<ResourceSummaryInfo> results = [];
+
+    private string resourceType = AllTypes;
+
+    private string query = string.Empty;
+
+    private string filterText = string.Empty;
+
+    private bool compartmentOnly;
+
+    private bool searched;
+
+    [Inject]
+    public required ResourceSearchService Service { get; set; }
+
+    private bool IsTenancyScope => String.Equals(Session.CompartmentId, Session.TenancyId, StringComparison.Ordinal);
+
+    protected override async Task OnInitializedAsync()
+    {
+        compartmentOnly = !IsTenancyScope;
+        query = BuildQuery();
+        await LoadAsync(async () =>
+        {
+            resourceTypes = await Service.ListResourceTypesAsync(CancellationToken);
+        });
+    }
+
+    protected override Task OnSessionChangedAsync()
+    {
+        compartmentOnly = !IsTenancyScope;
+        query = BuildQuery();
+        results = [];
+        searched = false;
+        return Task.CompletedTask;
+    }
+
+    private Task SearchAsync() =>
+        LoadAsync(async () =>
+        {
+            results = await Service.SearchAsync(query.Trim(), ResourceSearchService.MaxResults, CancellationToken);
+            searched = true;
+        });
+
+    private void OnResourceTypeChanged(string value)
+    {
+        resourceType = value;
+        query = BuildQuery();
+    }
+
+    private void OnScopeChanged(bool value)
+    {
+        compartmentOnly = value;
+        query = BuildQuery();
+    }
+
+    private bool FilterFunc(ResourceSummaryInfo resource) =>
+        String.IsNullOrWhiteSpace(filterText) ||
+        (resource.DisplayName ?? string.Empty).Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+        resource.ResourceType.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+        resource.Identifier.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+
+    private string CompartmentName(string compartmentId) =>
+        Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Name ?? DisplayFormat.Ocid(compartmentId);
+
+    private string CompartmentPath(string compartmentId) =>
+        Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Path ?? compartmentId;
+
+    // The compartment condition matches the compartment itself, not its children
+    private string BuildQuery()
+    {
+        var text = $"query {resourceType} resources";
+        return compartmentOnly ? $"{text} where compartmentId = '{Session.CompartmentId}'" : text;
+    }
+}

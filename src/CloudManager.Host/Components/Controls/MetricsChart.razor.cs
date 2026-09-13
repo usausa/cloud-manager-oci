@@ -21,6 +21,10 @@ public sealed partial class MetricsChart
     [Parameter]
     public string? Unit { get; set; }
 
+    // Format of the X axis labels, e.g. MM/dd for daily series
+    [Parameter]
+    public string LabelFormat { get; set; } = "HH:mm";
+
     [Parameter]
     public IReadOnlyList<MetricsChartSeries>? Series { get; set; }
 
@@ -44,7 +48,7 @@ public sealed partial class MetricsChart
         var step = Math.Max(1, (int)Math.Ceiling(timestamps.Count / (double)MaxLabels));
 #pragma warning disable IDE0028
         labels = timestamps
-            .Select((x, i) => i % step == 0 ? x.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture) : string.Empty)
+            .Select((x, i) => i % step == 0 ? x.ToLocalTime().ToString(LabelFormat, CultureInfo.InvariantCulture) : string.Empty)
             .ToArray();
 
         chartSeries = Series

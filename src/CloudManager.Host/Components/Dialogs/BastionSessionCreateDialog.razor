@@ -1,0 +1,29 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">セッション作成 - @BastionName</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudTextField @bind-Value="displayName" Label="セッション名" Required="true" />
+            <MudSelect T="string" @bind-Value="sessionType" Label="種類" Required="true">
+                <MudSelectItem Value="@BastionService.SessionTypePortForwarding">ポートフォワーディング</MudSelectItem>
+                <MudSelectItem Value="@BastionService.SessionTypeManagedSsh">管理対象 SSH</MudSelectItem>
+            </MudSelect>
+            <MudTextField @bind-Value="targetResourceId" Label="ターゲットリソース OCID" Placeholder="ocid1.instance.oc1..."
+                          Required="@(sessionType == BastionService.SessionTypeManagedSsh)" />
+            <MudTextField @bind-Value="targetPrivateIp" Label="ターゲットプライベート IP (省略可)" Placeholder="10.0.0.10" />
+            <MudNumericField T="int" @bind-Value="targetPort" Label="ターゲットポート" Min="1" Max="65535" />
+            @if (sessionType == BastionService.SessionTypeManagedSsh)
+            {
+                <MudTextField @bind-Value="osUserName" Label="OS ユーザー名" Placeholder="opc" Required="true" />
+            }
+            <MudTextField @bind-Value="publicKey" Label="SSH 公開鍵" Lines="3" Variant="Variant.Outlined" Required="true"
+                          Placeholder="ssh-rsa AAAA..." />
+            <MudNumericField T="int" @bind-Value="ttlSeconds" Label="TTL (秒)" Min="1800" Max="10800" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!IsValid)">作成</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,11 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">ログエントリ - @DisplayFormat.Time(Entry?.Timestamp)</MudText>
+    </TitleContent>
+    <DialogContent>
+        <pre class="log-text">@Entry?.Raw</pre>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,92 @@
+@page "/bastion"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Bastion</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Bastion</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudStack Spacing="3">
+    <div>
+        <MudText Typo="Typo.subtitle2" Class="mb-1">Bastion 一覧</MudText>
+        <MudTable T="BastionInfo" Items="bastions" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" SelectedItem="selectedBastion" SelectedItemChanged="OnBastionSelectedAsync" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>種類</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>ターゲット VCN</MudTh>
+                <MudTh>ターゲットサブネット</MudTh>
+                <MudTh>作成日時</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Class="@(context == selectedBastion ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.Name</span></MudText>
+                </MudTd>
+                <MudTd>@context.BastionType</MudTd>
+                <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ACTIVE" ? Color.Success : Color.Default)">@context.State</MudChip></MudTd>
+                <MudTd><span title="@context.TargetVcnId">@DisplayFormat.Ocid(context.TargetVcnId)</span></MudTd>
+                <MudTd><span title="@context.TargetSubnetId">@DisplayFormat.Ocid(context.TargetSubnetId)</span></MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </div>
+    @if (selectedBastion is not null)
+    {
+        <div>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-1">
+                <MudText Typo="Typo.subtitle2">セッション: @selectedBastion.Name</MudText>
+                <MudSpacer />
+                <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                           OnClick="CreateSessionAsync" Disabled="@(IsRunning || selectedBastion.State != "ACTIVE")">セッション作成</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+                           OnClick="LoadSessionsAsync" Disabled="IsBusy">更新</MudButton>
+            </MudStack>
+            <MudTable T="BastionSessionInfo" Items="sessions" Dense="true" Hover="true" Bordered="true" Striped="true"
+                      Loading="@isSessionsLoading" RowsPerPage="25">
+                <HeaderContent>
+                    <MudTh>名前</MudTh>
+                    <MudTh>種類</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>ターゲット</MudTh>
+                    <MudTh>ポート</MudTh>
+                    <MudTh>TTL (秒)</MudTh>
+                    <MudTh>作成日時</MudTh>
+                    <MudTh>操作</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                    <MudTd>@context.SessionType</MudTd>
+                    <MudTd><MudChip T="string" Size="Size.Small" Color="@SessionStateColor(context.State)">@context.State</MudChip></MudTd>
+                    <MudTd>
+                        <span title="@context.TargetResourceId">@(context.TargetPrivateIp ?? DisplayFormat.Ocid(context.TargetResourceId))</span>
+                    </MudTd>
+                    <MudTd>@(context.TargetPort?.ToString() ?? "-")</MudTd>
+                    <MudTd>@(context.TtlSeconds?.ToString() ?? "-")</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                    <MudTd>
+                        <MudTooltip Text="SSH コマンド">
+                            <MudIconButton Icon="@Icons.Material.Filled.Terminal" Size="Size.Small"
+                                           Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => ShowSessionAsync(context)" />
+                        </MudTooltip>
+                        <MudTooltip Text="削除">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           Disabled="@(IsRunning || context.State is "DELETING" or "DELETED")" OnClick="() => DeleteSessionAsync(context)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent><MudTablePager /></PagerContent>
+                <NoRecordsContent><MudText>セッションがありません。</MudText></NoRecordsContent>
+            </MudTable>
+        </div>
+    }
+</MudStack>

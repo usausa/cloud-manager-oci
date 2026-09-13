@@ -1,0 +1,60 @@
+@page "/vault"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Vault</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Vault シークレット</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="SecretInfo" Items="secrets" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="25">
+    <ToolBarContent>
+        <MudTextField @bind-Value="searchText" Placeholder="検索" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                      Immediate="true" Clearable="true" Margin="Margin.Dense" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>名前</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>Vault</MudTh>
+        <MudTh>ローテーション</MudTh>
+        <MudTh>最終ローテーション</MudTh>
+        <MudTh>有効期限</MudTh>
+        <MudTh>作成日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <span title="@context.Id">@context.SecretName</span>
+            @if (!String.IsNullOrEmpty(context.Description))
+            {
+                <MudText Typo="Typo.caption" Class="d-block">@context.Description</MudText>
+            }
+        </MudTd>
+        <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ACTIVE" ? Color.Success : Color.Default)">@context.State</MudChip></MudTd>
+        <MudTd><span title="@context.VaultId">@DisplayFormat.Ocid(context.VaultId)</span></MudTd>
+        <MudTd>@context.RotationStatus</MudTd>
+        <MudTd>@DisplayFormat.Time(context.LastRotationTime)</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeOfCurrentVersionExpiry)</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="値を表示">
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
+                               Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => ShowValueAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="ローテーション">
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Warning"
+                               Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => RotateAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

@@ -1,0 +1,64 @@
+@page "/resource-search"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - リソース検索</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">リソース検索</MudText>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudPaper Class="pa-3 mb-3">
+    <MudStack Spacing="2">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudSelect T="string" Value="resourceType" ValueChanged="OnResourceTypeChanged" Label="リソース種類" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Disabled="@(resourceTypes.Count == 0)">
+                <MudSelectItem Value="@AllTypes">すべて</MudSelectItem>
+                @foreach (var type in resourceTypes)
+                {
+                    <MudSelectItem Value="@type">@type</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSwitch T="bool" Value="compartmentOnly" ValueChanged="OnScopeChanged" Color="Color.Primary" Label="現在のコンパートメントのみ" Disabled="IsTenancyScope" />
+            <MudButton StartIcon="@Icons.Material.Filled.Search" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                       OnClick="SearchAsync" Disabled="@(IsLoading || String.IsNullOrWhiteSpace(query))">検索</MudButton>
+        </MudStack>
+        <MudTextField @bind-Value="query" Label="クエリ (構造化検索)" Lines="2" Variant="Variant.Outlined" Margin="Margin.Dense" />
+        <MudText Typo="Typo.caption">例: query instance resources where lifecycleState = 'RUNNING' / query all resources where displayName =~ 'web' (最大 @ResourceSearchService.MaxResults 件)</MudText>
+    </MudStack>
+</MudPaper>
+
+@if (searched)
+{
+    <MudTable T="ResourceSummaryInfo" Items="results" Dense="true" Hover="true" Bordered="true" Striped="true"
+              Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="50">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@results.Count 件@(results.Count >= ResourceSearchService.MaxResults ? " (上限)" : string.Empty)</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="filterText" Placeholder="結果を絞り込み" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.FilterList" IconSize="Size.Small"
+                          Immediate="true" Clearable="true" Margin="Margin.Dense" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>種類</MudTh>
+            <MudTh>名前</MudTh>
+            <MudTh>状態</MudTh>
+            <MudTh>コンパートメント</MudTh>
+            <MudTh>AD</MudTh>
+            <MudTh>作成日時</MudTh>
+            <MudTh>OCID</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ResourceType</MudTd>
+            <MudTd>@(context.DisplayName ?? "-")</MudTd>
+            <MudTd>@(context.State ?? "-")</MudTd>
+            <MudTd><span title="@CompartmentPath(context.CompartmentId)">@CompartmentName(context.CompartmentId)</span></MudTd>
+            <MudTd>@(context.AvailabilityDomain ?? "-")</MudTd>
+            <MudTd Class="nowrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            <MudTd Class="nowrap"><span title="@context.Identifier">@DisplayFormat.Ocid(context.Identifier)</span></MudTd>
+        </RowTemplate>
+        <PagerContent><MudTablePager /></PagerContent>
+        <NoRecordsContent><MudText>該当するリソースはありません。</MudText></NoRecordsContent>
+    </MudTable>
+}

@@ -1,0 +1,71 @@
+@page "/monitoring"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Monitoring</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Monitoring</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTabs Outlined="true" Class="mt-1" TabPanelsClass="pa-3">
+    <MudTabPanel Text="アラーム">
+        <MudTable T="AlarmInfo" Items="alarms" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="25">
+            <ToolBarContent>
+                <MudTextField @bind-Value="searchText" Placeholder="検索" Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                              Immediate="true" Clearable="true" Margin="Margin.Dense" />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>アラーム名</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>重大度</MudTh>
+                <MudTh>有効</MudTh>
+                <MudTh>ネームスペース</MudTh>
+                <MudTh>クエリ</MudTh>
+                <MudTh>発報日時</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd><MudChip T="string" Color="@AlarmStatusColor(context.Status)" Size="Size.Small">@context.Status</MudChip></MudTd>
+                <MudTd>@context.Severity</MudTd>
+                <MudTd>@(context.IsEnabled ? "有効" : "無効")</MudTd>
+                <MudTd>@context.Namespace</MudTd>
+                <MudTd><MudText Typo="Typo.body2" Class="target-text" title="@context.Query">@context.Query</MudText></MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimestampTriggered)</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </MudTabPanel>
+    <MudTabPanel Text="メトリクス">
+        <MudStack Spacing="2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudTextField @bind-Value="metricNamespace" Label="ネームスペース" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudSelect T="int" @bind-Value="hours" Label="期間" Variant="Variant.Outlined" Margin="Margin.Dense" Class="filter-select">
+                    <MudSelectItem Value="1">1 時間</MudSelectItem>
+                    <MudSelectItem Value="6">6 時間</MudSelectItem>
+                    <MudSelectItem Value="24">24 時間</MudSelectItem>
+                    <MudSelectItem Value="168">7 日</MudSelectItem>
+                </MudSelect>
+                <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                           OnClick="QueryMetricsAsync" Disabled="@(isMetricsLoading || String.IsNullOrWhiteSpace(metricNamespace) || String.IsNullOrWhiteSpace(metricQuery))">実行</MudButton>
+            </MudStack>
+            <MudTextField @bind-Value="metricQuery" Label="MQL クエリ" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          Placeholder="CpuUtilization[5m].mean()" />
+            <MudText Typo="Typo.caption">例: CpuUtilization[5m]{resourceId = "ocid1.instance..."}.mean() / MemoryUtilization[1h].max()</MudText>
+            @if (isMetricsLoading)
+            {
+                <MudProgressCircular Indeterminate="true" />
+            }
+            else if (metricsQueried)
+            {
+                <MetricsChart Title="@metricQuery" Series="metricSeries" />
+            }
+        </MudStack>
+    </MudTabPanel>
+</MudTabs>

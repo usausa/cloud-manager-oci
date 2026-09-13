@@ -1,0 +1,107 @@
+@page "/logging"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Logging</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Logging</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudStack Spacing="3">
+    <div>
+        <MudText Typo="Typo.subtitle2" Class="mb-1">ロググループ</MudText>
+        <MudTable T="LogGroupInfo" Items="logGroups" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" RowsPerPage="25" SelectedItem="selectedGroup" SelectedItemChanged="OnGroupSelectedAsync">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>説明</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>作成日時</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Class="@(context == selectedGroup ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.DisplayName</span></MudText>
+                </MudTd>
+                <MudTd>@(context.Description ?? "-")</MudTd>
+                <MudTd>@context.State</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </div>
+    @if (selectedGroup is not null)
+    {
+        <div>
+            <MudText Typo="Typo.subtitle2" Class="mb-1">ログ: @selectedGroup.DisplayName (行を選択すると検索対象を絞り込みます)</MudText>
+            <MudTable T="LogInfo" Items="logs" Dense="true" Hover="true" Bordered="true" Striped="true"
+                      Loading="@isLogsLoading" RowsPerPage="20" SelectedItem="selectedLog" SelectedItemChanged="OnLogSelected">
+                <HeaderContent>
+                    <MudTh>名前</MudTh>
+                    <MudTh>種類</MudTh>
+                    <MudTh>有効</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>保持 (日)</MudTh>
+                    <MudTh>ソース</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudText Class="@(context == selectedLog ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.DisplayName</span></MudText>
+                    </MudTd>
+                    <MudTd>@context.LogType</MudTd>
+                    <MudTd>@(context.IsEnabled ? "有効" : "無効")</MudTd>
+                    <MudTd>@context.State</MudTd>
+                    <MudTd>@(context.RetentionDays?.ToString() ?? "-")</MudTd>
+                    <MudTd>@(context.Source ?? "-")</MudTd>
+                </RowTemplate>
+                <PagerContent><MudTablePager /></PagerContent>
+                <NoRecordsContent><MudText>ログがありません。</MudText></NoRecordsContent>
+            </MudTable>
+        </div>
+        <MudPaper Class="pa-3">
+            <MudStack Spacing="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudText Typo="Typo.subtitle2">ログ検索</MudText>
+                    <MudSpacer />
+                    <MudSelect T="int" @bind-Value="hours" Label="期間" Variant="Variant.Outlined" Margin="Margin.Dense" Class="filter-select">
+                        <MudSelectItem Value="1">1 時間</MudSelectItem>
+                        <MudSelectItem Value="6">6 時間</MudSelectItem>
+                        <MudSelectItem Value="24">24 時間</MudSelectItem>
+                        <MudSelectItem Value="168">7 日</MudSelectItem>
+                    </MudSelect>
+                    <MudNumericField T="int" @bind-Value="limit" Label="最大件数" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="1000" Class="filter-select" />
+                    <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                               OnClick="SearchAsync" Disabled="@(IsRunning || String.IsNullOrWhiteSpace(query))">実行</MudButton>
+                </MudStack>
+                <MudTextField @bind-Value="query" Label="クエリ" Lines="2" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                @if (searched)
+                {
+                    <MudTable T="LogEntryInfo" Items="entries" Dense="true" Hover="true" Bordered="true" Striped="true" RowsPerPage="50">
+                        <HeaderContent>
+                            <MudTh>時刻</MudTh>
+                            <MudTh>メッセージ</MudTh>
+                            <MudTh>詳細</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@DisplayFormat.Time(context.Timestamp)</MudTd>
+                            <MudTd><span class="log-text">@context.Message</span></MudTd>
+                            <MudTd>
+                                <MudTooltip Text="JSON を表示">
+                                    <MudIconButton Icon="@Icons.Material.Filled.DataObject" Size="Size.Small" OnClick="() => ShowEntryAsync(context)" />
+                                </MudTooltip>
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent><MudTablePager /></PagerContent>
+                        <NoRecordsContent><MudText>該当するログはありません。</MudText></NoRecordsContent>
+                    </MudTable>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudStack>

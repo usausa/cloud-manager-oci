@@ -81,6 +81,10 @@ td.mud-table-cell:has(.mud-tooltip-root) {
     word-break: break-all;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
+
 /* Detail tables: keep the label column on one line */
 .detail-table td:first-child {
     white-space: nowrap;

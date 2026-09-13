@@ -1,0 +1,93 @@
+@page "/identity-domains"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Identity Domains</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Identity Domains</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudStack Spacing="3">
+    <div>
+        <MudText Typo="Typo.subtitle2" Class="mb-1">ドメイン</MudText>
+        <MudTable T="IdentityDomainInfo" Items="domains" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" SelectedItem="selectedDomain" SelectedItemChanged="OnDomainSelectedAsync" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>種類</MudTh>
+                <MudTh>ライセンス</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>ホームリージョン</MudTh>
+                <MudTh>エンドポイント</MudTh>
+                <MudTh>作成日時</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>
+                    <MudText Class="@(context == selectedDomain ? "mud-primary-text font-bold" : string.Empty)"><span title="@context.Id">@context.DisplayName</span></MudText>
+                </MudTd>
+                <MudTd>@context.Type</MudTd>
+                <MudTd>@context.LicenseType</MudTd>
+                <MudTd>@context.State</MudTd>
+                <MudTd>@(context.HomeRegion ?? "-")</MudTd>
+                <MudTd class="break-all">@context.Endpoint</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </div>
+    @if (selectedDomain is not null)
+    {
+        <div>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-1">
+                <MudText Typo="Typo.subtitle2">ユーザー: @selectedDomain.DisplayName</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="userSearchText" Placeholder="検索" Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                              Immediate="true" Clearable="true" Margin="Margin.Dense" />
+                <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+                           OnClick="LoadUsersAsync" Disabled="IsBusy">更新</MudButton>
+            </MudStack>
+            <MudTable T="DomainUserInfo" Items="FilteredUsers" Dense="true" Hover="true" Bordered="true" Striped="true"
+                      Loading="@isUsersLoading" RowsPerPage="25">
+                <HeaderContent>
+                    <MudTh>ユーザー名</MudTh>
+                    <MudTh>表示名</MudTh>
+                    <MudTh>有効</MudTh>
+                    <MudTh>メール</MudTh>
+                    <MudTh>作成日時</MudTh>
+                    <MudTh>操作</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><span title="@context.Id">@context.UserName</span></MudTd>
+                    <MudTd>@(context.DisplayName ?? "-")</MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small" Color="@(context.Active ? Color.Success : Color.Default)">
+                            @(context.Active ? "有効" : "無効")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd>@(context.Email ?? "-")</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.Created)</MudTd>
+                    <MudTd>
+                        <MudTooltip Text="パスワードリセット (メール通知)">
+                            <MudIconButton Icon="@Icons.Material.Filled.LockReset" Size="Size.Small" Color="Color.Warning"
+                                           Disabled="IsRunning" OnClick="() => ResetPasswordAsync(context)" />
+                        </MudTooltip>
+                        <MudTooltip Text="パスワード設定">
+                            <MudIconButton Icon="@Icons.Material.Filled.Password" Size="Size.Small" Color="Color.Warning"
+                                           Disabled="IsRunning" OnClick="() => SetPasswordAsync(context)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent><MudTablePager /></PagerContent>
+                <NoRecordsContent><MudText>ユーザーがいません。</MudText></NoRecordsContent>
+            </MudTable>
+        </div>
+    }
+</MudStack>
