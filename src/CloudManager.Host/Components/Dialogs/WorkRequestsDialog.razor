@@ -1,0 +1,44 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>作業リクエスト - @ResourceName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (requests.Count == 0)
+        {
+            <MudText>作業リクエストがありません。</MudText>
+        }
+        else
+        {
+            <MudTable T="WorkRequestInfo" Items="requests" Dense="true" Hover="true" Bordered="true" RowsPerPage="20">
+                <HeaderContent>
+                    <MudTh>操作</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>進捗</MudTh>
+                    <MudTh>受付</MudTh>
+                    <MudTh>開始</MudTh>
+                    <MudTh>終了</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><span title="@context.Id">@context.OperationType</span></MudTd>
+                    <MudTd>@context.Status</MudTd>
+                    <MudTd>@(context.PercentComplete.HasValue ? $"{context.PercentComplete:F0}%" : "-")</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.TimeAccepted)</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.TimeStarted)</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.TimeFinished)</MudTd>
+                </RowTemplate>
+                <PagerContent><MudTablePager /></PagerContent>
+            </MudTable>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

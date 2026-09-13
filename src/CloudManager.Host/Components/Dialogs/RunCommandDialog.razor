@@ -1,0 +1,14 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Run Command - @InstanceName</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-2">Oracle Cloud Agent の Run Command プラグインが有効なインスタンスで、シェルスクリプトを実行します。出力は先頭 1 KB までです。</MudText>
+        <MudTextField @bind-Value="command" Label="スクリプト" Lines="4" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" />
+        <MudNumericField @bind-Value="timeoutSeconds" Label="タイムアウト (秒)" Variant="Variant.Outlined" Margin="Margin.Dense" Min="10" Max="3600" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@String.IsNullOrWhiteSpace(command)">実行</MudButton>
+    </DialogActions>
+</MudDialog>

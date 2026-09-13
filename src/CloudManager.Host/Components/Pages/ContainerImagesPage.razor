@@ -1,0 +1,40 @@
+@page "/ocir/{RepositoryName}"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Container Registry イメージ</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="ocir" Size="Size.Small" />
+    <MudText Typo="Typo.h5">@RepositoryName</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="ContainerImageInfo" Items="images" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>バージョン (タグ)</MudTh>
+        <MudTh>ダイジェスト</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>プッシュ日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@(context.Version ?? "(untagged)")</MudTd>
+        <MudTd Class="digest"><span title="@context.Digest">@(context.Digest.Length > 20 ? context.Digest[..20] + "…" : context.Digest)</span></MudTd>
+        <MudTd>@context.State</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="削除">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                               Disabled="IsRunning" OnClick="() => DeleteAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

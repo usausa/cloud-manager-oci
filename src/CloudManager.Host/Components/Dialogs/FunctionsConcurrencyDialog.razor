@@ -1,0 +1,20 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>プロビジョニング済み同時実行 - @FunctionName</TitleContent>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText>現在: @(Current.HasValue ? Current.Value.ToString(CultureInfo.InvariantCulture) : "未設定")</MudText>
+            <MudNumericField @bind-Value="newValue" Label="新しい値（空 = 無効化）" Min="0" />
+            <MudText Typo="Typo.caption">値はアプリケーションのシェイプに応じた単位（例: 40 の倍数）で指定します。</MudText>
+        </MudStack>
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" OnClick="SaveAsync" Disabled="isSaving">保存</MudButton>
+    </DialogActions>
+</MudDialog>

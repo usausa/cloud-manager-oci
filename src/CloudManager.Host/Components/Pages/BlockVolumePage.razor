@@ -1,0 +1,74 @@
+@page "/block-volume"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Block Volume</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Block Volume</MudText>
+    <MudSpacer />
+    <MudSelect T="string" @bind-Value="kindFilter" Label="種類" Dense="true" Margin="Margin.Dense" Class="filter-select">
+        <MudSelectItem Value='@("")'>すべて</MudSelectItem>
+        <MudSelectItem Value='@("block")'>ブロックボリューム</MudSelectItem>
+        <MudSelectItem Value='@("boot")'>ブートボリューム</MudSelectItem>
+    </MudSelect>
+    <MudSelect T="string" @bind-Value="stateFilter" Label="状態" Dense="true" Margin="Margin.Dense" Class="filter-select">
+        <MudSelectItem Value='@("")'>すべて</MudSelectItem>
+        <MudSelectItem Value='@("AVAILABLE")'>AVAILABLE</MudSelectItem>
+        <MudSelectItem Value='@("PROVISIONING")'>PROVISIONING</MudSelectItem>
+        <MudSelectItem Value='@("TERMINATED")'>TERMINATED</MudSelectItem>
+    </MudSelect>
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="BlockVolumeInfo" Items="FilteredVolumes" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>名前</MudTh>
+        <MudTh>種類</MudTh>
+        <MudTh>サイズ(GB)</MudTh>
+        <MudTh>VPU/GB</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>AD</MudTh>
+        <MudTh>アタッチ先</MudTh>
+        <MudTh>作成日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <MudTd>@(context.IsBootVolume ? "ブート" : "ブロック")</MudTd>
+        <MudTd>@context.SizeGb</MudTd>
+        <MudTd>@(context.VpusPerGb?.ToString() ?? "-")</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@StateColor(context.State)">@context.State</MudChip>
+        </MudTd>
+        <MudTd>@context.AvailabilityDomain</MudTd>
+        <MudTd><span title="@context.AttachedInstanceId">@DisplayFormat.Ocid(context.AttachedInstanceId)</span></MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="バックアップ作成">
+                <MudIconButton Icon="@Icons.Material.Filled.Camera" Size="Size.Small"
+                               OnClick="@(() => CreateBackupAsync(context))" />
+            </MudTooltip>
+            @if (!context.IsBootVolume && (context.AttachedInstanceId is null) && (context.State == "AVAILABLE"))
+            {
+                <MudTooltip Text="アタッチ">
+                    <MudIconButton Icon="@Icons.Material.Filled.Link" Size="Size.Small"
+                                   OnClick="@(() => AttachAsync(context))" />
+                </MudTooltip>
+            }
+            @if (!context.IsBootVolume && (context.AttachmentId is not null))
+            {
+                <MudTooltip Text="デタッチ">
+                    <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small"
+                                   OnClick="@(() => DetachAsync(context))" />
+                </MudTooltip>
+            }
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

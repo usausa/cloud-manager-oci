@@ -1,0 +1,121 @@
+@page "/adb"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Autonomous Database</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Autonomous Database</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTabs Outlined="true" Class="mt-1">
+    <MudTabPanel Text="データベース">
+        <MudTable T="AutonomousDatabaseInfo" Items="databases" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@IsLoading" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>表示名</MudTh>
+                <MudTh>DB 名</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>ワークロード</MudTh>
+                <MudTh>バージョン</MudTh>
+                <MudTh>ECPU / OCPU</MudTh>
+                <MudTh>ストレージ(GB)</MudTh>
+                <MudTh>ライセンス</MudTh>
+                <MudTh>操作</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span> @(context.IsFreeTier ? "(Free)" : string.Empty)</MudTd>
+                <MudTd>@context.DbName</MudTd>
+                <MudTd><MudChip T="string" Color="@StateColor(context.State)" Size="Size.Small">@context.State</MudChip></MudTd>
+                <MudTd>@context.Workload</MudTd>
+                <MudTd>@(context.DbVersion ?? "-")</MudTd>
+                <MudTd>@context.ComputeCount @context.ComputeModel @(context.IsAutoScalingEnabled ? "(auto)" : string.Empty)</MudTd>
+                <MudTd>@(context.StorageGb?.ToString() ?? "-")</MudTd>
+                <MudTd>@context.LicenseModel</MudTd>
+                <MudTd>
+                    <MudTooltip Text="Start">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small"
+                                       Disabled="IsRunning" OnClick="() => StartAsync(context)" />
+                    </MudTooltip>
+                    <MudTooltip Text="Stop">
+                        <MudIconButton Icon="@Icons.Material.Filled.Stop" Size="Size.Small"
+                                       Disabled="IsRunning" OnClick="() => StopAsync(context)" />
+                    </MudTooltip>
+                    <MudTooltip Text="Restart">
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small"
+                                       Disabled="IsRunning" OnClick="() => RestartAsync(context)" />
+                    </MudTooltip>
+                    <MudTooltip Text="バックアップ作成">
+                        <MudIconButton Icon="@Icons.Material.Filled.CameraAlt" Size="Size.Small"
+                                       Disabled="IsRunning" OnClick="() => CreateBackupAsync(context)" />
+                    </MudTooltip>
+                    <MudTooltip Text="接続文字列">
+                        <MudIconButton Icon="@Icons.Material.Filled.Link" Size="Size.Small"
+                                       Disabled="IsRunning" OnClick="() => ShowConnectionStringsAsync(context)" />
+                    </MudTooltip>
+                    <MudTooltip Text="作業リクエスト">
+                        <MudIconButton Icon="@Icons.Material.Filled.EventNote" Size="Size.Small"
+                                       Disabled="IsRunning" OnClick="() => ShowWorkRequestsAsync(context)" />
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </MudTabPanel>
+
+    <MudTabPanel Text="バックアップ">
+        <MudStack Row="true" Class="mb-1 mt-1">
+            <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+                       OnClick="LoadBackupsAsync" Disabled="IsBusy">バックアップ更新</MudButton>
+        </MudStack>
+        <MudTable T="AutonomousDatabaseBackupInfo" Items="backups" Dense="true" Hover="true" Bordered="true" Striped="true"
+                  Loading="@isBackupLoading" RowsPerPage="25">
+            <HeaderContent>
+                <MudTh>名前</MudTh>
+                <MudTh>データベース</MudTh>
+                <MudTh>状態</MudTh>
+                <MudTh>種類</MudTh>
+                <MudTh>自動</MudTh>
+                <MudTh>開始</MudTh>
+                <MudTh>終了</MudTh>
+                <MudTh>サイズ(TB)</MudTh>
+                <MudTh>保持(日)</MudTh>
+                <MudTh>操作</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                <MudTd>@DatabaseName(context.DatabaseId)</MudTd>
+                <MudTd><MudChip T="string" Color="@BackupStateColor(context.State)" Size="Size.Small">@context.State</MudChip></MudTd>
+                <MudTd>@context.Type</MudTd>
+                <MudTd>@(context.IsAutomatic ? "✓" : "")</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeStarted)</MudTd>
+                <MudTd>@DisplayFormat.Time(context.TimeEnded)</MudTd>
+                <MudTd>@(context.SizeTb?.ToString("F3") ?? "-")</MudTd>
+                <MudTd>@(context.RetentionDays?.ToString() ?? "-")</MudTd>
+                <MudTd>
+                    @if (context.IsRestorable && context.TimeEnded.HasValue)
+                    {
+                        <MudTooltip Text="この時点へ復元 (in-place)">
+                            <MudIconButton Icon="@Icons.Material.Filled.Restore" Size="Size.Small"
+                                           Disabled="IsRunning" OnClick="() => RestoreAsync(context)" />
+                        </MudTooltip>
+                    }
+                    @if (!context.IsAutomatic)
+                    {
+                        <MudTooltip Text="削除">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           Disabled="IsRunning" OnClick="() => DeleteBackupAsync(context)" />
+                        </MudTooltip>
+                    }
+                </MudTd>
+            </RowTemplate>
+            <PagerContent><MudTablePager /></PagerContent>
+        </MudTable>
+    </MudTabPanel>
+</MudTabs>

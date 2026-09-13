@@ -1,0 +1,38 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>構成 - @FunctionName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="mb-2">構成はコンテナに環境変数として渡されます。保存すると全体が置き換わります。</MudText>
+            <MudTable T="ConfigEntry" Items="entries" Dense="true" Hover="true" Bordered="true">
+                <HeaderContent>
+                    <MudTh>キー</MudTh>
+                    <MudTh>値</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><MudTextField @bind-Value="context.Key" Margin="Margin.Dense" Immediate="true" /></MudTd>
+                    <MudTd><MudTextField @bind-Value="context.Value" Margin="Margin.Dense" Immediate="true" /></MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" OnClick="@(() => entries.Remove(context))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+            <MudButton StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Class="mt-2" OnClick="@(() => entries.Add(new ConfigEntry()))">追加</MudButton>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" OnClick="SaveAsync" Disabled="@(isSaving || IsLoading)">保存</MudButton>
+    </DialogActions>
+</MudDialog>

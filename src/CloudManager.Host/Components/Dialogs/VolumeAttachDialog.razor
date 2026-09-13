@@ -1,0 +1,17 @@
+<MudDialog>
+    <TitleContent>ボリュームのアタッチ - @VolumeName</TitleContent>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudTextField @bind-Value="instanceId" Label="インスタンス OCID" Required="true" FullWidth="true" AutoFocus="true" />
+            <MudSelect T="string" @bind-Value="attachmentType" Label="アタッチ方式">
+                <MudSelectItem Value="@BlockVolumeService.AttachmentTypeParavirtualized">準仮想化 (PARAVIRTUALIZED)</MudSelectItem>
+                <MudSelectItem Value="@BlockVolumeService.AttachmentTypeIscsi">iSCSI</MudSelectItem>
+            </MudSelect>
+            <MudTextField @bind-Value="device" Label="デバイスパス (任意)" Placeholder="/dev/oracleoci/oraclevdb" FullWidth="true" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!IsValid)">アタッチ</MudButton>
+    </DialogActions>
+</MudDialog>

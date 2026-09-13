@@ -1,0 +1,15 @@
+<MudDialog>
+    <TitleContent><MudText Typo="Typo.h6">Functions 実行 - @FunctionName</MudText></TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="payload" Label="Payload (JSON)" Variant="Variant.Outlined" Lines="6"
+                      Margin="Margin.Dense" Class="mb-2" />
+        <MudSelect T="string" @bind-Value="invokeType" Label="実行タイプ" Variant="Variant.Outlined" Margin="Margin.Dense">
+            <MudSelectItem Value="@FunctionsService.InvokeTypeSync">Sync (同期・応答あり)</MudSelectItem>
+            <MudSelectItem Value="@FunctionsService.InvokeTypeDetached">Detached (非同期)</MudSelectItem>
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">実行</MudButton>
+    </DialogActions>
+</MudDialog>

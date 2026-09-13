@@ -1,0 +1,68 @@
+@page "/functions"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Functions</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Functions</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudPaper Class="pa-2 mb-2">
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+        <MudSelect T="string" Value="selectedApplicationId" ValueChanged="OnApplicationSelectedAsync" Label="アプリケーション"
+                   Variant="Variant.Outlined" Margin="Margin.Dense" Class="selector-field">
+            @foreach (var application in applications)
+            {
+                <MudSelectItem Value="@application.Id">@application.DisplayName (@application.State)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField @bind-Value="searchText" Placeholder="検索" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                      Immediate="true" Clearable="true" Margin="Margin.Dense" Class="search-field" />
+    </MudStack>
+</MudPaper>
+
+<MudTable T="FunctionInfo" Items="functions" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>関数名</MudTh>
+        <MudTh>イメージ</MudTh>
+        <MudTh>メモリ(MB)</MudTh>
+        <MudTh>タイムアウト(秒)</MudTh>
+        <MudTh>プロビジョニング済み同時実行</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>最終更新</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+        <MudTd class="break-all">@(context.Image ?? "-")</MudTd>
+        <MudTd>@(context.MemoryMb?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.TimeoutSeconds?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.ProvisionedConcurrency?.ToString() ?? "-")</MudTd>
+        <MudTd>@context.State</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeUpdated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="Invoke">
+                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => InvokeAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="構成 (環境変数)">
+                <MudIconButton Icon="@Icons.Material.Filled.Tune" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => ShowConfigAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="プロビジョニング済み同時実行">
+                <MudIconButton Icon="@Icons.Material.Filled.Speed" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => ShowConcurrencyAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

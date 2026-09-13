@@ -1,0 +1,47 @@
+@page "/nosql"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - NoSQL</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">NoSQL Database</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="NosqlTableInfo" Items="tables" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>テーブル名</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>容量モード</MudTh>
+        <MudTh>読み取り単位</MudTh>
+        <MudTh>書き込み単位</MudTh>
+        <MudTh>ストレージ(GB)</MudTh>
+        <MudTh>作成日時</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><span title="@context.Id">@context.Name</span></MudTd>
+        <MudTd>@context.State</MudTd>
+        <MudTd>@context.CapacityMode</MudTd>
+        <MudTd>@(context.MaxReadUnits?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.MaxWriteUnits?.ToString() ?? "-")</MudTd>
+        <MudTd>@(context.MaxStorageGb?.ToString() ?? "-")</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="クエリ">
+                <MudIconButton Icon="@Icons.Material.Filled.Search" Size="Size.Small"
+                               OnClick="() => QueryAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="スキーマ">
+                <MudIconButton Icon="@Icons.Material.Filled.Schema" Size="Size.Small"
+                               OnClick="() => ShowSchemaAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

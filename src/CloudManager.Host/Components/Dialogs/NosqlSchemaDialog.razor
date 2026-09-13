@@ -1,0 +1,42 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>スキーマ - @TableName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (detail is not null)
+        {
+            <MudText Typo="Typo.body2" Class="mb-1">主キー: @(detail.PrimaryKey.Count == 0 ? "-" : String.Join(", ", detail.PrimaryKey)) / TTL: @(detail.TtlDays.HasValue ? $"{detail.TtlDays} 日" : "なし")</MudText>
+            <MudTable T="NosqlColumnInfo" Items="detail.Columns" Dense="true" Hover="true" Bordered="true">
+                <HeaderContent>
+                    <MudTh>列名</MudTh>
+                    <MudTh>型</MudTh>
+                    <MudTh>NULL 可</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Name</MudTd>
+                    <MudTd>@context.Type</MudTd>
+                    <MudTd>@(context.IsNullable ? "✓" : "")</MudTd>
+                </RowTemplate>
+            </MudTable>
+            @if (!String.IsNullOrEmpty(detail.Ddl))
+            {
+                <MudExpansionPanels Class="mt-2">
+                    <MudExpansionPanel Text="DDL">
+                        <pre class="policy-text">@detail.Ddl</pre>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            }
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

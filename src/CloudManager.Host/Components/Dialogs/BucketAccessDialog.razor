@@ -1,0 +1,32 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>可視性 / 設定 - @BucketName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (access is not null)
+        {
+            <MudAlert Severity="@(access.PublicAccessType == "NoPublicAccess" ? Severity.Success : Severity.Warning)" Class="mb-2">@access.Verdict</MudAlert>
+            <MudSimpleTable Dense="true" Bordered="true">
+                <tbody>
+                    <tr><td>パブリックアクセス</td><td>@access.PublicAccessType</td></tr>
+                    <tr><td>バージョニング</td><td>@access.Versioning</td></tr>
+                    <tr><td>ストレージ層</td><td>@access.StorageTier</td></tr>
+                    <tr><td>自動階層化</td><td>@(access.AutoTiering ? "有効" : "無効")</td></tr>
+                    <tr><td>オブジェクト数 (概算)</td><td>@(access.ApproximateCount?.ToString("N0") ?? "-")</td></tr>
+                    <tr><td>サイズ (概算)</td><td>@(access.ApproximateSize.HasValue ? DisplayFormat.Size(access.ApproximateSize.Value) : "-")</td></tr>
+                </tbody>
+            </MudSimpleTable>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

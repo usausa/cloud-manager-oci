@@ -1,0 +1,43 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>ライフサイクルルール - @BucketName</TitleContent>
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (rules.Count == 0)
+        {
+            <MudText>ライフサイクルルールは設定されていません。</MudText>
+        }
+        else
+        {
+            <MudTable T="ObjectLifecycleRuleInfo" Items="rules" Dense="true" Hover="true" Bordered="true">
+                <HeaderContent>
+                    <MudTh>名前</MudTh>
+                    <MudTh>アクション</MudTh>
+                    <MudTh>対象</MudTh>
+                    <MudTh>期間</MudTh>
+                    <MudTh>プレフィックス</MudTh>
+                    <MudTh>有効</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Name</MudTd>
+                    <MudTd>@context.Action</MudTd>
+                    <MudTd>@context.Target</MudTd>
+                    <MudTd>@context.Period</MudTd>
+                    <MudTd>@(context.Prefixes.Count == 0 ? "(すべて)" : String.Join(", ", context.Prefixes))</MudTd>
+                    <MudTd>@(context.IsEnabled ? "✓" : "")</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

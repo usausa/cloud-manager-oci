@@ -1,0 +1,43 @@
+@page "/object-storage"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Object Storage</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Object Storage バケット</MudText>
+    <MudText Typo="Typo.subtitle1" Class="ml-1 mud-text-secondary">@(namespaceName is null ? string.Empty : $"namespace: {namespaceName}")</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadBucketsAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="BucketInfo" Items="buckets" Dense="true" Hover="true" Loading="@IsLoading" RowsPerPage="50">
+    <HeaderContent>
+        <MudTh>バケット名</MudTh>
+        <MudTh>作成者</MudTh>
+        <MudTh>作成日</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@(context.CreatedBy ?? "-")</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="オブジェクト一覧">
+                <MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Size="Size.Small"
+                               Href="@($"object-storage/{Uri.EscapeDataString(context.Name)}")" />
+            </MudTooltip>
+            <MudTooltip Text="可視性 / 設定">
+                <MudIconButton Icon="@Icons.Material.Filled.Security" Size="Size.Small"
+                               OnClick="@(() => ShowAccessAsync(context))" />
+            </MudTooltip>
+            <MudTooltip Text="ライフサイクル">
+                <MudIconButton Icon="@Icons.Material.Filled.Loop" Size="Size.Small"
+                               OnClick="@(() => ShowLifecycleAsync(context))" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>

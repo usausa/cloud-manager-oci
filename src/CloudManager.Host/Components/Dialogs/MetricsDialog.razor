@@ -1,0 +1,35 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">メトリクス - @Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
+            <MudSelect T="int" @bind-Value="hours" Label="期間" Variant="Variant.Outlined" Margin="Margin.Dense" Class="filter-select">
+                <MudSelectItem Value="1">1 時間</MudSelectItem>
+                <MudSelectItem Value="6">6 時間</MudSelectItem>
+                <MudSelectItem Value="24">24 時間</MudSelectItem>
+            </MudSelect>
+            <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small" OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+        </MudStack>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            @foreach (var chart in charts)
+            {
+                <MetricsChart Title="@chart.Title" Unit="@Unit" Series="chart.Series" />
+            }
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

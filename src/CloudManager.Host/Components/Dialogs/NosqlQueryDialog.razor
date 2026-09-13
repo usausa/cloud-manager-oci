@@ -1,0 +1,53 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent><MudText Typo="Typo.h6">クエリ - @TableName</MudText></TitleContent>
+    <DialogContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+            <MudTextField @bind-Value="statement" Label="SQL" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-grow-1" Lines="2" />
+            <MudNumericField @bind-Value="limit" Label="件数" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="1000" Class="filter-select" />
+            <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                       OnClick="RunAsync" Disabled="@(IsLoading || String.IsNullOrWhiteSpace(statement))">実行</MudButton>
+        </MudStack>
+        @if (IsLoading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (rows.Count > 0)
+        {
+            <MudSimpleTable Dense="true" Bordered="true" Striped="true" Class="mt-1">
+                <thead>
+                    <tr>
+                        @foreach (var column in columns)
+                        {
+                            <th>@column</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in rows)
+                    {
+                        <tr>
+                            @foreach (var column in columns)
+                            {
+                                <td class="break-all">@(row.Columns.GetValueOrDefault(column) ?? string.Empty)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            <MudText Typo="Typo.caption">@rows.Count 件</MudText>
+        }
+        else if (executed)
+        {
+            <MudText>結果がありません。</MudText>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

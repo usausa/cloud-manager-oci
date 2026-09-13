@@ -7,6 +7,8 @@ using MudBlazor;
 // Shows Monitoring metrics as a line chart
 public sealed partial class MetricsChart
 {
+    private const int MaxLabels = 12;
+
     private readonly LineChartOptions chartOptions = new() { YAxisTicks = 5 };
 
     private List<ChartSeries<double>> chartSeries = [];
@@ -38,9 +40,11 @@ public sealed partial class MetricsChart
             .Order()
             .ToList();
 
+        // Only every n-th label is shown so that dense series stay readable
+        var step = Math.Max(1, (int)Math.Ceiling(timestamps.Count / (double)MaxLabels));
 #pragma warning disable IDE0028
         labels = timestamps
-            .Select(static x => x.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture))
+            .Select((x, i) => i % step == 0 ? x.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture) : string.Empty)
             .ToArray();
 
         chartSeries = Series

@@ -1,0 +1,103 @@
+@page "/compute"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Compute</PageTitle>
+
+<ProgressOverlay Visible="IsRunning" Ratio="ProgressRatio" Message="@ProgressMessage" />
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Compute インスタンス</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudPaper Class="pa-2 mb-2">
+    <MudStack Row="true" Spacing="2">
+        <MudSelect T="string" @bind-Value="filterState" Label="状態" Variant="Variant.Outlined" Margin="Margin.Dense"
+                   Class="filter-select" Clearable="true">
+            @foreach (var s in States)
+            {
+                <MudSelectItem Value="@s">@s</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField @bind-Value="filterTag" Label="Tag K=V" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      Class="search-field" />
+        <MudButton StartIcon="@Icons.Material.Filled.FilterList" Variant="Variant.Outlined" Size="Size.Small"
+                   OnClick="LoadAsync" Disabled="IsBusy">絞り込み</MudButton>
+    </MudStack>
+</MudPaper>
+
+<MudTable T="ComputeInstanceInfo" Items="instances" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>名前</MudTh>
+        <MudTh>OCID</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>シェイプ</MudTh>
+        <MudTh>パブリック IP</MudTh>
+        <MudTh>プライベート IP</MudTh>
+        <MudTh>AD</MudTh>
+        <MudTh>作成時刻</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.DisplayName</MudTd>
+        <MudTd><span title="@context.Id">@DisplayFormat.Ocid(context.Id)</span></MudTd>
+        <MudTd><MudChip T="string" Color="@StateColor(context.State)" Size="Size.Small">@context.State</MudChip></MudTd>
+        <MudTd>@context.Shape @(context.Ocpus.HasValue ? $"({context.Ocpus} OCPU / {context.MemoryGb} GB)" : string.Empty)</MudTd>
+        <MudTd>@(context.PublicIp ?? "-")</MudTd>
+        <MudTd>@(context.PrivateIp ?? "-")</MudTd>
+        <MudTd>@context.AvailabilityDomain</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="Start">
+                <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => StartAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="Stop">
+                <MudIconButton Icon="@Icons.Material.Filled.Stop" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => StopAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="Reboot">
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => RebootAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="Terminate">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                               Disabled="IsRunning" OnClick="() => TerminateAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="Run Command">
+                <MudIconButton Icon="@Icons.Material.Filled.Terminal" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => RunCommandAsync(context)" />
+            </MudTooltip>
+            <MudTooltip Text="メトリクス">
+                <MudIconButton Icon="@Icons.Material.Filled.Timeline" Size="Size.Small"
+                               Disabled="IsRunning" OnClick="() => ShowMetricsAsync(context)" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@if (commandResult is not null)
+{
+    <MudPaper Class="pa-2 mt-2">
+        <MudText Typo="Typo.subtitle2">Run Command 結果：@commandResult.Status @(commandResult.ExitCode.HasValue ? $"(exit {commandResult.ExitCode})" : string.Empty)</MudText>
+        <MudExpansionPanels>
+            <MudExpansionPanel Text="output" Expanded="true">
+                <pre class="console-output">@commandResult.Output</pre>
+            </MudExpansionPanel>
+            @if (!String.IsNullOrEmpty(commandResult.Message))
+            {
+                <MudExpansionPanel Text="message">
+                    <pre class="console-output">@commandResult.Message</pre>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+    </MudPaper>
+}

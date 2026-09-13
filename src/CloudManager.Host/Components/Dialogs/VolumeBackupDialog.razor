@@ -1,0 +1,10 @@
+<MudDialog>
+    <TitleContent>バックアップ作成 - @VolumeName</TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="displayName" Label="バックアップ名" FullWidth="true" AutoFocus="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">キャンセル</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@String.IsNullOrWhiteSpace(displayName)">作成</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,33 @@
+@inherits OciComponentBase
+
+<MudDialog>
+    <TitleContent>コンテナ一覧 - @InstanceName</TitleContent>
+    <DialogContent>
+        @if (IsLoading) { <MudProgressCircular Indeterminate="true" /> }
+        else if (containers.Count == 0) { <MudText>コンテナがありません。</MudText> }
+        else
+        {
+            <MudTable T="ContainerInfo" Items="containers" Dense="true" Hover="true" Bordered="true">
+                <HeaderContent>
+                    <MudTh>名前</MudTh>
+                    <MudTh>状態</MudTh>
+                    <MudTh>イメージ</MudTh>
+                    <MudTh>作成日時</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
+                    <MudTd>@context.State</MudTd>
+                    <MudTd class="break-all">@(context.Image ?? "-")</MudTd>
+                    <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+        @if (ErrorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@ErrorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()">閉じる</MudButton>
+    </DialogActions>
+</MudDialog>

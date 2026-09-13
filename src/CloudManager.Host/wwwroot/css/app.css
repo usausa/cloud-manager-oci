@@ -11,6 +11,11 @@ body {
     padding: 2px 8px;
 }
 
+/* Keep row action icons on one line */
+td.mud-table-cell:has(.mud-tooltip-root) {
+    white-space: nowrap;
+}
+
 /* Service list */
 .service-item a.mud-link {
     display: flex;

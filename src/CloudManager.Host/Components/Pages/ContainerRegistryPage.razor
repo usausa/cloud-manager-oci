@@ -1,0 +1,52 @@
+@page "/ocir"
+@inherits OciComponentBase
+
+<PageTitle>CloudManager - Container Registry</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudText Typo="Typo.h5">Container Registry</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Refresh" Variant="Variant.Outlined" Size="Size.Small"
+               OnClick="LoadAsync" Disabled="IsBusy">更新</MudButton>
+</MudStack>
+
+<ErrorBanner Message="@ErrorMessage" OnClear="() => ErrorMessage = null" />
+
+<MudTable T="ContainerRepositoryInfo" Items="repositories" Dense="true" Hover="true" Bordered="true" Striped="true"
+          Loading="@IsLoading" Filter="FilterFunc" RowsPerPage="25">
+    <ToolBarContent>
+        <MudTextField @bind-Value="searchText" Placeholder="検索" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"
+                      Immediate="true" Clearable="true" Margin="Margin.Dense" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>リポジトリ名</MudTh>
+        <MudTh>アドレス</MudTh>
+        <MudTh>イメージ数</MudTh>
+        <MudTh>サイズ</MudTh>
+        <MudTh>公開</MudTh>
+        <MudTh>状態</MudTh>
+        <MudTh>作成日</MudTh>
+        <MudTh>操作</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.DisplayName</MudTd>
+        <MudTd class="break-all">@context.Address</MudTd>
+        <MudTd>@context.ImageCount</MudTd>
+        <MudTd>@DisplayFormat.Size(context.LayersSizeBytes)</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@(context.IsPublic ? Color.Warning : Color.Default)">
+                @(context.IsPublic ? "パブリック" : "プライベート")
+            </MudChip>
+        </MudTd>
+        <MudTd>@context.State</MudTd>
+        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd>
+            <MudTooltip Text="イメージ一覧">
+                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
+                               Href="@($"ocir/{Uri.EscapeDataString(context.DisplayName)}")" />
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent><MudTablePager /></PagerContent>
+</MudTable>
