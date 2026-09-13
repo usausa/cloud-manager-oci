@@ -48,7 +48,8 @@ public sealed partial class QueuePage
         var dialog = await DialogService.ShowAsync<QueueSendMessageDialog>("メッセージ送信", new DialogParameters<QueueSendMessageDialog>
         {
             { x => x.QueueName, queue.DisplayName }
-        });
+        },
+        Styles.MediumDialog);
         var result = await dialog.Result;
         if (result is null || result.Canceled)
         {
@@ -59,7 +60,7 @@ public sealed partial class QueuePage
         await RunAsync("送信中...", async (_, cancellationToken) =>
         {
             await Service.PutMessageAsync(queue.Id, queue.MessagesEndpoint, p.Content, cancellationToken);
-            Snackbar.AddSuccess($"メッセージ送信完了: {queue.DisplayName}");
+            Snackbar.AddSuccess($"{queue.DisplayName} にメッセージを送信しました。");
             await LoadAsync();
         });
     }
@@ -83,14 +84,15 @@ public sealed partial class QueuePage
             { x => x.QueueName, queue.DisplayName },
             { x => x.MessagesEndpoint, queue.MessagesEndpoint },
             { x => x.Messages, messages }
-        });
+        },
+        Styles.LargeDialog);
         await dialog.Result;
         await LoadAsync();
     }
 
     private async Task PurgeAsync(QueueInfo queue)
     {
-        if (await DialogService.ShowOperationConfirm("パージ確認", $"キュー「{queue.DisplayName}」のメッセージ (デッドレターキューを含む) をすべて削除します。", requireConfirmText: queue.DisplayName) is null)
+        if (await DialogService.ShowOperationConfirm("パージ", $"キュー「{queue.DisplayName}」のメッセージ (デッドレターキューを含む) をすべて削除します。", requireConfirmText: queue.DisplayName) is null)
         {
             return;
         }
@@ -98,7 +100,7 @@ public sealed partial class QueuePage
         await RunAsync("パージ中...", async (_, cancellationToken) =>
         {
             await Service.PurgeQueueAsync(queue.Id, cancellationToken);
-            Snackbar.AddSuccess($"パージ完了: {queue.DisplayName}");
+            Snackbar.AddSuccess($"{queue.DisplayName} をパージしました。");
             await LoadAsync();
         });
     }

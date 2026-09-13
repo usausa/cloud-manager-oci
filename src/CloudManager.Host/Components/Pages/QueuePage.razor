@@ -40,8 +40,8 @@
         <MudTd>@(context.InFlightMessages?.ToString() ?? "-")</MudTd>
         <MudTd>@(context.VisibilityInSeconds?.ToString() ?? "-")</MudTd>
         <MudTd>@(context.RetentionInSeconds?.ToString() ?? "-")</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-        <MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">
             <MudTooltip Text="メッセージ送信">
                 <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small"
                                Disabled="@(IsRunning || !IsActive(context))" OnClick="() => SendMessageAsync(context)" />

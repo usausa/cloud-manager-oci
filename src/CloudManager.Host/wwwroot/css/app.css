@@ -11,9 +11,13 @@ body {
     padding: 2px 8px;
 }
 
-/* Keep row action icons on one line */
-td.mud-table-cell:has(.mud-tooltip-root) {
+th.mud-table-cell {
     white-space: nowrap;
+}
+
+/* Tabs */
+.mud-tabs .mud-tab {
+    text-transform: none;
 }
 
 /* Service list */
@@ -81,7 +85,7 @@ td.mud-table-cell:has(.mud-tooltip-root) {
     word-break: break-all;
 }
 
-.nowrap {
+.no-wrap {
     white-space: nowrap;
 }
 

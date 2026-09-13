@@ -50,7 +50,8 @@ public sealed partial class FunctionsPage
         var dialog = await DialogService.ShowAsync<FunctionsInvokeDialog>("Functions 実行", new DialogParameters<FunctionsInvokeDialog>
         {
             { x => x.FunctionName, function.DisplayName }
-        });
+        },
+        Styles.MediumDialog);
         var dialogResult = await dialog.Result;
         if (dialogResult is null || dialogResult.Canceled)
         {
@@ -58,7 +59,7 @@ public sealed partial class FunctionsPage
         }
 
         var invokeParams = (FunctionsInvokeParams)dialogResult.Data!;
-        await RunAsync($"Invoke: {function.DisplayName}", async (_, cancellationToken) =>
+        await RunAsync($"実行中: {function.DisplayName}", async (_, cancellationToken) =>
         {
             var result = await Service.InvokeAsync(function.Id, invokeParams.Payload, invokeParams.InvokeType, cancellationToken);
 
@@ -68,7 +69,8 @@ public sealed partial class FunctionsPage
                 { x => x.InvokeType, invokeParams.InvokeType },
                 { x => x.RequestId, result.RequestId },
                 { x => x.Payload, result.Payload }
-            });
+            },
+            Styles.LargeDialog);
         });
     }
 
@@ -78,7 +80,8 @@ public sealed partial class FunctionsPage
         {
             { x => x.FunctionId, function.Id },
             { x => x.FunctionName, function.DisplayName }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private async Task ShowConcurrencyAsync(FunctionInfo function)

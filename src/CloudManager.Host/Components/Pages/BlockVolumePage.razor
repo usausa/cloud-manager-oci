@@ -50,8 +50,8 @@
         </MudTd>
         <MudTd>@context.AvailabilityDomain</MudTd>
         <MudTd><span title="@context.AttachedInstanceId">@DisplayFormat.Ocid(context.AttachedInstanceId)</span></MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-        <MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">
             <MudTooltip Text="バックアップ作成">
                 <MudIconButton Icon="@Icons.Material.Filled.Camera" Size="Size.Small"
                                OnClick="@(() => CreateBackupAsync(context))" />

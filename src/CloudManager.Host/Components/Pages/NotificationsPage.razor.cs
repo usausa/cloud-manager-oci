@@ -34,28 +34,19 @@ public sealed partial class NotificationsPage
         });
     }
 
-    private async Task OnTopicSelectedAsync(TopicInfo? topic)
+    private Task OnTopicSelectedAsync(TopicInfo? topic)
     {
         selectedTopic = topic;
         subscriptions = [];
         if (topic is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isSubscriptionsLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             subscriptions = await Service.ListSubscriptionsAsync(topic.TopicId, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isSubscriptionsLoading = false;
-        }
+        }, x => isSubscriptionsLoading = x);
     }
 
     private async Task PublishAsync(TopicInfo topic)
@@ -63,7 +54,8 @@ public sealed partial class NotificationsPage
         var dialog = await DialogService.ShowAsync<NotificationPublishDialog>("メッセージ発行", new DialogParameters<NotificationPublishDialog>
         {
             { x => x.TopicName, topic.Name }
-        });
+        },
+        Styles.MediumDialog);
         var result = await dialog.Result;
         if (result is null || result.Canceled)
         {
@@ -74,7 +66,7 @@ public sealed partial class NotificationsPage
         await RunAsync("発行中...", async (_, cancellationToken) =>
         {
             var messageId = await Service.PublishAsync(topic.TopicId, p.Title, p.Body, cancellationToken);
-            Snackbar.AddSuccess($"発行完了 (MessageId: {messageId})");
+            Snackbar.AddSuccess($"メッセージを発行しました。(MessageId: {messageId})");
         });
     }
 }

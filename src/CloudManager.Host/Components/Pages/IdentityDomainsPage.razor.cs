@@ -51,26 +51,17 @@ public sealed partial class IdentityDomainsPage
         return domain is null ? Task.CompletedTask : LoadUsersAsync();
     }
 
-    private async Task LoadUsersAsync()
+    private Task LoadUsersAsync()
     {
         if (selectedDomain is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isUsersLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             users = await Service.ListUsersAsync(selectedDomain.Endpoint, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isUsersLoading = false;
-        }
+        }, x => isUsersLoading = x);
     }
 
     private async Task ResetPasswordAsync(DomainUserInfo user)
@@ -80,15 +71,15 @@ public sealed partial class IdentityDomainsPage
             return;
         }
 
-        if (await DialogService.ShowOperationConfirm("パスワードリセット確認", $"ユーザー「{user.UserName}」にパスワードリセットの通知を送ります。", requireConfirmText: user.UserName) is null)
+        if (await DialogService.ShowOperationConfirm("パスワードリセット", $"ユーザー「{user.UserName}」にパスワードリセットの通知を送りますか？", requireConfirmText: user.UserName) is null)
         {
             return;
         }
 
-        await RunAsync("実行中...", async (_, cancellationToken) =>
+        await RunAsync("パスワードリセット中...", async (_, cancellationToken) =>
         {
             await Service.ResetPasswordAsync(selectedDomain.Endpoint, user.Id, cancellationToken);
-            Snackbar.AddSuccess($"パスワードリセットを要求しました: {user.UserName}");
+            Snackbar.AddSuccess($"{user.UserName} のパスワードリセットを要求しました。");
         });
     }
 
@@ -113,7 +104,7 @@ public sealed partial class IdentityDomainsPage
         await RunAsync("設定中...", async (_, cancellationToken) =>
         {
             await Service.SetPasswordAsync(selectedDomain.Endpoint, user.Id, password, cancellationToken);
-            Snackbar.AddSuccess($"パスワードを設定しました: {user.UserName}");
+            Snackbar.AddSuccess($"{user.UserName} のパスワードを設定しました。");
         });
     }
 }

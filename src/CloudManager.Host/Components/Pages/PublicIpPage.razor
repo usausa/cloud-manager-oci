@@ -31,7 +31,7 @@
         <MudTd>@context.IpAddress</MudTd>
         <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ASSIGNED" ? Color.Primary : Color.Default)">@context.State</MudChip></MudTd>
         <MudTd><span title="@context.AssignedEntityId">@(context.AssignedEntityId is null ? "-" : $"{context.AssignedEntityType} {DisplayFormat.Ocid(context.AssignedEntityId)}")</span></MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
         <MudTd>
             @if (context.AssignedEntityId is null)
             {

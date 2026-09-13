@@ -35,15 +35,15 @@
         <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
         <MudTd class="break-all">@context.Address</MudTd>
         <MudTd>@context.ImageCount</MudTd>
-        <MudTd>@DisplayFormat.Size(context.LayersSizeBytes)</MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Size(context.LayersSizeBytes)</MudTd>
         <MudTd>
             <MudChip T="string" Size="Size.Small" Color="@(context.IsPublic ? Color.Warning : Color.Default)">
                 @(context.IsPublic ? "パブリック" : "プライベート")
             </MudChip>
         </MudTd>
         <MudTd>@context.State</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-        <MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">
             <MudTooltip Text="イメージ一覧">
                 <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
                                Href="@($"ocir/{Uri.EscapeDataString(context.DisplayName)}")" />

@@ -40,17 +40,17 @@
                 <MudTd>@context.ComputeCount @context.ComputeModel @(context.IsAutoScalingEnabled ? "(auto)" : string.Empty)</MudTd>
                 <MudTd>@(context.StorageGb?.ToString() ?? "-")</MudTd>
                 <MudTd>@context.LicenseModel</MudTd>
-                <MudTd>
-                    <MudTooltip Text="Start">
+                <MudTd Class="no-wrap">
+                    <MudTooltip Text="起動">
                         <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small"
                                        Disabled="IsRunning" OnClick="() => StartAsync(context)" />
                     </MudTooltip>
-                    <MudTooltip Text="Stop">
+                    <MudTooltip Text="停止">
                         <MudIconButton Icon="@Icons.Material.Filled.Stop" Size="Size.Small"
                                        Disabled="IsRunning" OnClick="() => StopAsync(context)" />
                     </MudTooltip>
-                    <MudTooltip Text="Restart">
-                        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small"
+                    <MudTooltip Text="再起動">
+                        <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Size="Size.Small"
                                        Disabled="IsRunning" OnClick="() => RestartAsync(context)" />
                     </MudTooltip>
                     <MudTooltip Text="バックアップ作成">
@@ -96,8 +96,8 @@
                 <MudTd><MudChip T="string" Color="@BackupStateColor(context.State)" Size="Size.Small">@context.State</MudChip></MudTd>
                 <MudTd>@context.Type</MudTd>
                 <MudTd>@(context.IsAutomatic ? "✓" : "")</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeStarted)</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeEnded)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeStarted)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeEnded)</MudTd>
                 <MudTd>@(context.SizeTb?.ToString("F3") ?? "-")</MudTd>
                 <MudTd>@(context.RetentionDays?.ToString() ?? "-")</MudTd>
                 <MudTd>

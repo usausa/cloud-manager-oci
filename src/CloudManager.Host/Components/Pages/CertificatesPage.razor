@@ -30,7 +30,7 @@
         <MudTd>@(context.CommonName ?? "-")</MudTd>
         <MudTd>@context.ConfigType</MudTd>
         <MudTd>@context.State</MudTd>
-        <MudTd>@DisplayFormat.Time(context.NotAfter)</MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.NotAfter)</MudTd>
         <MudTd>
             @if (context.DaysToExpiry.HasValue)
             {
@@ -41,7 +41,7 @@
                 <span>-</span>
             }
         </MudTd>
-        <MudTd>
+        <MudTd Class="no-wrap">
             <MudTooltip Text="詳細">
                 <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small" OnClick="() => ShowDetailAsync(context)" />
             </MudTooltip>

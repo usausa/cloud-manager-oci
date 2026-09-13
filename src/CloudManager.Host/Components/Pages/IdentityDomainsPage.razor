@@ -39,7 +39,7 @@
                 <MudTd>@context.State</MudTd>
                 <MudTd>@(context.HomeRegion ?? "-")</MudTd>
                 <MudTd class="break-all">@context.Endpoint</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
             </RowTemplate>
             <PagerContent><MudTablePager /></PagerContent>
         </MudTable>
@@ -75,8 +75,8 @@
                         </MudChip>
                     </MudTd>
                     <MudTd>@(context.Email ?? "-")</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.Created)</MudTd>
-                    <MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.Created)</MudTd>
+                    <MudTd Class="no-wrap">
                         <MudTooltip Text="パスワードリセット (メール通知)">
                             <MudIconButton Icon="@Icons.Material.Filled.LockReset" Size="Size.Small" Color="Color.Warning"
                                            Disabled="IsRunning" OnClick="() => ResetPasswordAsync(context)" />

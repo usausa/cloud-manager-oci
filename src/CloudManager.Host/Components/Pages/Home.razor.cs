@@ -103,9 +103,9 @@ public sealed partial class Home
 
     private string ScopeName => IsTenancyScope ? $"{Session.CompartmentName} (テナンシ全体)" : Session.CompartmentName;
 
-    private static string CurrentMonthLabel => DateTime.UtcNow.ToString("yyyy/MM", CultureInfo.InvariantCulture);
+    private static string CurrentMonthLabel => DateTime.UtcNow.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
-    private static string PreviousMonthLabel => DateTime.UtcNow.AddMonths(-1).ToString("yyyy/MM", CultureInfo.InvariantCulture);
+    private static string PreviousMonthLabel => DateTime.UtcNow.AddMonths(-1).ToString("yyyy-MM", CultureInfo.InvariantCulture);
 
     protected override Task OnInitializedAsync() =>
         Session.IsProfileAvailable ? LoadAsync(LoadSummaryAsync) : Task.CompletedTask;

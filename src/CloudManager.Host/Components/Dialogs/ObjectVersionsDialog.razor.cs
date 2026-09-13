@@ -36,7 +36,7 @@ public sealed partial class ObjectVersionsDialog
         try
         {
             await Service.RestoreVersionAsync(BucketName, ObjectName, version.VersionId, CancellationToken);
-            Snackbar.AddSuccess($"バージョン {version.VersionId} を復元しました");
+            Snackbar.AddSuccess($"バージョン {version.VersionId} を復元しました。");
             versions = await Service.ListVersionsAsync(BucketName, ObjectName, CancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

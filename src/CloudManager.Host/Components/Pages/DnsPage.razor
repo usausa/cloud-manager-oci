@@ -42,7 +42,7 @@
                 <MudTd>@context.Scope</MudTd>
                 <MudTd>@context.State</MudTd>
                 <MudTd>@(context.Serial?.ToString() ?? "-")</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
             </RowTemplate>
             <PagerContent><MudTablePager /></PagerContent>
         </MudTable>
@@ -72,7 +72,7 @@
                     <MudTd>@context.Rtype</MudTd>
                     <MudTd>@context.Ttl</MudTd>
                     <MudTd class="break-all">@String.Join(", ", context.Rdata)</MudTd>
-                    <MudTd>
+                    <MudTd Class="no-wrap">
                         <MudTooltip Text="編集">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
                                            Disabled="@(IsRunning || IsProtected(context))" OnClick="() => OpenUpsertDialogAsync(context)" />

@@ -33,7 +33,7 @@
                 <MudTd>@context.EndpointType</MudTd>
                 <MudTd>@(context.Hostname ?? "-")</MudTd>
                 <MudTd>@context.State</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
             </RowTemplate>
             <PagerContent><MudTablePager /></PagerContent>
         </MudTable>
@@ -56,7 +56,7 @@
                     <MudTd>@context.PathPrefix</MudTd>
                     <MudTd class="break-all">@(context.Endpoint ?? "-")</MudTd>
                     <MudTd>@context.State</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeUpdated)</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeUpdated)</MudTd>
                 </RowTemplate>
                 <PagerContent><MudTablePager /></PagerContent>
                 <NoRecordsContent><MudText>デプロイメントがありません。</MudText></NoRecordsContent>

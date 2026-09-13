@@ -43,26 +43,17 @@ public sealed partial class BastionPage
         return bastion is null ? Task.CompletedTask : LoadSessionsAsync();
     }
 
-    private async Task LoadSessionsAsync()
+    private Task LoadSessionsAsync()
     {
         if (selectedBastion is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isSessionsLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             sessions = await Service.ListSessionsAsync(selectedBastion.Id, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isSessionsLoading = false;
-        }
+        }, x => isSessionsLoading = x);
     }
 
     private static Color SessionStateColor(string state) => state switch
@@ -99,7 +90,8 @@ public sealed partial class BastionPage
         var dialog = await DialogService.ShowAsync<BastionSessionCreateDialog>("セッション作成", new DialogParameters<BastionSessionCreateDialog>
         {
             { x => x.BastionName, selectedBastion.Name }
-        });
+        },
+        Styles.MediumDialog);
         var result = await dialog.Result;
         if (result is null || result.Canceled)
         {
@@ -123,7 +115,7 @@ public sealed partial class BastionPage
                 CreateTimeoutSeconds,
                 progress,
                 cancellationToken);
-            Snackbar.AddSuccess($"セッション作成完了: {p.DisplayName}");
+            Snackbar.AddSuccess($"{p.DisplayName} を作成しました。");
             await LoadSessionsAsync();
         });
         if (detail is not null)
@@ -134,7 +126,7 @@ public sealed partial class BastionPage
 
     private async Task DeleteSessionAsync(BastionSessionInfo session)
     {
-        if (await DialogService.ShowOperationConfirm("セッション削除確認", $"セッション「{session.DisplayName}」を削除します。") is null)
+        if (await DialogService.ShowOperationConfirm("セッション削除", $"セッション「{session.DisplayName}」を削除しますか？") is null)
         {
             return;
         }
@@ -142,7 +134,7 @@ public sealed partial class BastionPage
         await RunAsync("削除中...", async (_, cancellationToken) =>
         {
             await Service.DeleteSessionAsync(session.Id, cancellationToken);
-            Snackbar.AddSuccess($"セッション削除開始: {session.DisplayName}");
+            Snackbar.AddSuccess($"{session.DisplayName} の削除を開始しました。");
             await LoadSessionsAsync();
         });
     }
@@ -152,6 +144,7 @@ public sealed partial class BastionPage
         await DialogService.ShowAsync<BastionSessionDialog>("セッション", new DialogParameters<BastionSessionDialog>
         {
             { x => x.Detail, detail }
-        });
+        },
+        Styles.MediumDialog);
     }
 }

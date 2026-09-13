@@ -44,12 +44,13 @@ public sealed partial class VaultPage
         await DialogService.ShowAsync<SecretValueDialog>("シークレット値", new DialogParameters<SecretValueDialog>
         {
             { x => x.Value, value }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private async Task RotateAsync(SecretInfo secret)
     {
-        if (await DialogService.ShowOperationConfirm("ローテーション確認", $"シークレット「{secret.SecretName}」を即時ローテーションします。ターゲットシステムの設定が必要です。") is null)
+        if (await DialogService.ShowOperationConfirm("ローテーション", $"シークレット「{secret.SecretName}」を即時ローテーションします。ターゲットシステムの設定が必要です。") is null)
         {
             return;
         }
@@ -57,7 +58,7 @@ public sealed partial class VaultPage
         await RunAsync("ローテーション中...", async (_, cancellationToken) =>
         {
             await Service.RotateSecretAsync(secret.Id, cancellationToken);
-            Snackbar.AddSuccess($"ローテーション開始: {secret.SecretName}");
+            Snackbar.AddSuccess($"{secret.SecretName} のローテーションを開始しました。");
             await LoadAsync();
         });
     }

@@ -8,8 +8,6 @@ using MudBlazor;
 
 public sealed partial class NosqlPage
 {
-    private static readonly DialogOptions WideDialogOptions = new() { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true };
-
     private List<NosqlTableInfo> tables = [];
 
     [Inject]
@@ -34,7 +32,7 @@ public sealed partial class NosqlPage
                 { x => x.CompartmentId, table.CompartmentId },
                 { x => x.TableName, table.Name }
             },
-            WideDialogOptions);
+            Styles.LargeDialog);
     }
 
     private async Task ShowSchemaAsync(NosqlTableInfo table)
@@ -43,6 +41,7 @@ public sealed partial class NosqlPage
         {
             { x => x.CompartmentId, table.CompartmentId },
             { x => x.TableName, table.Name }
-        });
+        },
+        Styles.MediumDialog);
     }
 }

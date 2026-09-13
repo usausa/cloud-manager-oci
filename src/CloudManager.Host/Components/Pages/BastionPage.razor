@@ -37,7 +37,7 @@
                 <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ACTIVE" ? Color.Success : Color.Default)">@context.State</MudChip></MudTd>
                 <MudTd><span title="@context.TargetVcnId">@DisplayFormat.Ocid(context.TargetVcnId)</span></MudTd>
                 <MudTd><span title="@context.TargetSubnetId">@DisplayFormat.Ocid(context.TargetSubnetId)</span></MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
             </RowTemplate>
             <PagerContent><MudTablePager /></PagerContent>
         </MudTable>
@@ -74,8 +74,8 @@
                     </MudTd>
                     <MudTd>@(context.TargetPort?.ToString() ?? "-")</MudTd>
                     <MudTd>@(context.TtlSeconds?.ToString() ?? "-")</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-                    <MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                    <MudTd Class="no-wrap">
                         <MudTooltip Text="SSH コマンド">
                             <MudIconButton Icon="@Icons.Material.Filled.Terminal" Size="Size.Small"
                                            Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => ShowSessionAsync(context)" />

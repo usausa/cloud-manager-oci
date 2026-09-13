@@ -39,6 +39,7 @@ public sealed partial class ObjectStoragePage
         await DialogService.ShowAsync<ObjectLifecycleDialog>("ライフサイクルルール", new DialogParameters<ObjectLifecycleDialog>
         {
             { x => x.BucketName, bucket.Name }
-        });
+        },
+        Styles.MediumDialog);
     }
 }

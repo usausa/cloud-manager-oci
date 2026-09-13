@@ -76,9 +76,13 @@ public abstract class OciComponentBase : AppComponentBase
         Session.Compartments.FirstOrDefault(x => x.Id == compartmentId)?.Path ?? compartmentId ?? "-";
 
     // Loads data, showing failures in the banner
-    protected async Task LoadAsync(Func<Task> load)
+    protected Task LoadAsync(Func<Task> load) =>
+        LoadAsync(load, x => IsLoading = x);
+
+    // Loads a detail list that has its own loading flag
+    protected async Task LoadAsync(Func<Task> load, Action<bool> setLoading)
     {
-        IsLoading = true;
+        setLoading(true);
         ErrorMessage = null;
         try
         {
@@ -91,7 +95,7 @@ public abstract class OciComponentBase : AppComponentBase
         }
         finally
         {
-            IsLoading = false;
+            setLoading(false);
         }
     }
 

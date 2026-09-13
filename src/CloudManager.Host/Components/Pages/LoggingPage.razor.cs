@@ -47,7 +47,7 @@ public sealed partial class LoggingPage
         });
     }
 
-    private async Task OnGroupSelectedAsync(LogGroupInfo? group)
+    private Task OnGroupSelectedAsync(LogGroupInfo? group)
     {
         selectedGroup = group;
         selectedLog = null;
@@ -55,24 +55,14 @@ public sealed partial class LoggingPage
         ClearResults();
         if (group is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         query = LoggingService.BuildQuery(group.CompartmentId, group.Id, null);
-
-        isLogsLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             logs = await Service.ListLogsAsync(group.Id, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isLogsLoading = false;
-        }
+        }, x => isLogsLoading = x);
     }
 
     // Selecting a log narrows the default query to it
@@ -98,7 +88,8 @@ public sealed partial class LoggingPage
         await DialogService.ShowAsync<LogEntryDialog>("ログエントリ", new DialogParameters<LogEntryDialog>
         {
             { x => x.Entry, entry }
-        });
+        },
+        Styles.LargeDialog);
     }
 
     private void ClearResults()

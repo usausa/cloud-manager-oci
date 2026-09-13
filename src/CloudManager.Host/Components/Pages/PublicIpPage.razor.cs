@@ -40,7 +40,7 @@ public sealed partial class PublicIpPage
         await RunAsync("割当中...", async (_, cancellationToken) =>
         {
             await Service.AssignAsync(publicIp.Id, instanceId, cancellationToken);
-            Snackbar.AddSuccess("パブリック IP を割り当てました");
+            Snackbar.AddSuccess("パブリック IP を割り当てました。");
         }, LoadAsync);
     }
 
@@ -54,7 +54,7 @@ public sealed partial class PublicIpPage
         await RunAsync("割当解除中...", async (_, cancellationToken) =>
         {
             await Service.UnassignAsync(publicIp.Id, cancellationToken);
-            Snackbar.AddSuccess("割当を解除しました");
+            Snackbar.AddSuccess("割当を解除しました。");
         }, LoadAsync);
     }
 }

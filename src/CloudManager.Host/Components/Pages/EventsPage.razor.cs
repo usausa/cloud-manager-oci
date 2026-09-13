@@ -30,7 +30,7 @@ public sealed partial class EventsPage
         RunAsync("有効化中...", async (_, cancellationToken) =>
         {
             await Service.EnableRuleAsync(rule.Id, cancellationToken);
-            Snackbar.AddSuccess($"ルールを有効化しました: {rule.DisplayName}");
+            Snackbar.AddSuccess($"{rule.DisplayName} を有効化しました。");
             await LoadAsync();
         });
 
@@ -38,7 +38,7 @@ public sealed partial class EventsPage
         RunAsync("無効化中...", async (_, cancellationToken) =>
         {
             await Service.DisableRuleAsync(rule.Id, cancellationToken);
-            Snackbar.AddSuccess($"ルールを無効化しました: {rule.DisplayName}");
+            Snackbar.AddSuccess($"{rule.DisplayName} を無効化しました。");
             await LoadAsync();
         });
 }

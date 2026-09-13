@@ -55,8 +55,8 @@
             <MudTd>@(context.State ?? "-")</MudTd>
             <MudTd><span title="@CompartmentPath(context.CompartmentId)">@CompartmentName(context.CompartmentId)</span></MudTd>
             <MudTd>@(context.AvailabilityDomain ?? "-")</MudTd>
-            <MudTd Class="nowrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
-            <MudTd Class="nowrap"><span title="@context.Identifier">@DisplayFormat.Ocid(context.Identifier)</span></MudTd>
+            <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+            <MudTd Class="no-wrap"><span title="@context.Identifier">@DisplayFormat.Ocid(context.Identifier)</span></MudTd>
         </RowTemplate>
         <PagerContent><MudTablePager /></PagerContent>
         <NoRecordsContent><MudText>該当するリソースはありません。</MudText></NoRecordsContent>

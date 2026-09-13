@@ -53,17 +53,16 @@ public sealed partial class VcnPage
     }
 
     // Load the components of the selected VCN
-    private async Task OnVcnSelectedAsync(VcnInfo? vcn)
+    private Task OnVcnSelectedAsync(VcnInfo? vcn)
     {
         selectedVcn = vcn;
         ClearDetail();
         if (vcn is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isDetailLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             var detail = await Service.GetVcnDetailAsync(vcn.Id, CancellationToken);
             subnets = detail.Subnets;
@@ -73,14 +72,6 @@ public sealed partial class VcnPage
             internetGateways = detail.InternetGateways;
             natGateways = detail.NatGateways;
             serviceGateways = detail.ServiceGateways;
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isDetailLoading = false;
-        }
+        }, x => isDetailLoading = x);
     }
 }

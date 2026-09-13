@@ -29,27 +29,18 @@ public sealed partial class ApiGatewayPage
         });
     }
 
-    private async Task OnGatewaySelectedAsync(ApiGatewayInfo? gateway)
+    private Task OnGatewaySelectedAsync(ApiGatewayInfo? gateway)
     {
         selectedGateway = gateway;
         deployments = [];
         if (gateway is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isDetailLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             deployments = await Service.ListDeploymentsAsync(gateway.Id, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isDetailLoading = false;
-        }
+        }, x => isDetailLoading = x);
     }
 }

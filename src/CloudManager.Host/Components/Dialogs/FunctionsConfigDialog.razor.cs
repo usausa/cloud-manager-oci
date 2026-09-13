@@ -45,7 +45,7 @@ public sealed partial class FunctionsConfigDialog
         try
         {
             await Service.UpdateConfigAsync(FunctionId, config, CancellationToken);
-            Snackbar.AddSuccess("構成を更新しました");
+            Snackbar.AddSuccess("構成を更新しました。");
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

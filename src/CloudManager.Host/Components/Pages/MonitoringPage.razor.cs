@@ -54,11 +54,8 @@ public sealed partial class MonitoringPage
     };
 
     // One series per resource; the resolution is left to the query interval
-    private async Task QueryMetricsAsync()
-    {
-        isMetricsLoading = true;
-        ErrorMessage = null;
-        try
+    private Task QueryMetricsAsync() =>
+        LoadAsync(async () =>
         {
             var end = DateTime.UtcNow;
             var series = await Service.GetMetricDataAsync(metricNamespace.Trim(), metricQuery.Trim(), end.AddHours(-hours), end, null, null, CancellationToken);
@@ -68,14 +65,5 @@ public sealed partial class MonitoringPage
                 .ToList();
 #pragma warning restore IDE0028
             metricsQueried = true;
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isMetricsLoading = false;
-        }
-    }
+        }, x => isMetricsLoading = x);
 }

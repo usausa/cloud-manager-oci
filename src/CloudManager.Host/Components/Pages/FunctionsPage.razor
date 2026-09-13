@@ -48,9 +48,9 @@
         <MudTd>@(context.TimeoutSeconds?.ToString() ?? "-")</MudTd>
         <MudTd>@(context.ProvisionedConcurrency?.ToString() ?? "-")</MudTd>
         <MudTd>@context.State</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeUpdated)</MudTd>
-        <MudTd>
-            <MudTooltip Text="Invoke">
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeUpdated)</MudTd>
+        <MudTd Class="no-wrap">
+            <MudTooltip Text="実行">
                 <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small"
                                Disabled="IsRunning" OnClick="() => InvokeAsync(context)" />
             </MudTooltip>

@@ -28,8 +28,8 @@
         <MudTd>@(context.Version ?? "(untagged)")</MudTd>
         <MudTd Class="digest"><span title="@context.Digest">@(context.Digest.Length > 20 ? context.Digest[..20] + "…" : context.Digest)</span></MudTd>
         <MudTd>@context.State</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-        <MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">
             <MudTooltip Text="削除">
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
                                Disabled="IsRunning" OnClick="() => DeleteAsync(context)" />

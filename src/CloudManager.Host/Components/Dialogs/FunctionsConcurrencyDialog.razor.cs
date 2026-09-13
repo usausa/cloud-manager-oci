@@ -39,7 +39,7 @@ public sealed partial class FunctionsConcurrencyDialog
         try
         {
             await Service.SetProvisionedConcurrencyAsync(FunctionId, newValue, CancellationToken);
-            Snackbar.AddSuccess("プロビジョニング済み同時実行を更新しました");
+            Snackbar.AddSuccess("プロビジョニング済み同時実行を更新しました。");
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

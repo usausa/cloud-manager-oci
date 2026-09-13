@@ -74,7 +74,7 @@ public sealed partial class ObjectsPage
         {
             await using var stream = uploadParams.File.OpenReadStream(MaxUploadBytes, cancellationToken);
             await Service.UploadStreamAsync(BucketName, uploadParams.Name, stream, progress, cancellationToken);
-            Snackbar.AddSuccess($"アップロード完了: {uploadParams.Name}");
+            Snackbar.AddSuccess($"{uploadParams.Name} をアップロードしました。");
         }, LoadObjectsAsync);
     }
 
@@ -84,7 +84,7 @@ public sealed partial class ObjectsPage
 
     private async Task DeleteObjectAsync(ObjectInfo obj)
     {
-        if (await DialogService.ShowOperationConfirm("削除確認", $"オブジェクト {obj.Name} を削除しますか？", requireConfirmText: obj.Name.Split('/').Last()) is null)
+        if (await DialogService.ShowOperationConfirm("削除", $"オブジェクト {obj.Name} を削除しますか？", requireConfirmText: obj.Name.Split('/').Last()) is null)
         {
             return;
         }
@@ -92,14 +92,14 @@ public sealed partial class ObjectsPage
         await RunAsync("削除中...", async (_, cancellationToken) =>
         {
             await Service.DeleteObjectAsync(BucketName, obj.Name, cancellationToken);
-            Snackbar.AddSuccess($"削除しました: {obj.Name}");
+            Snackbar.AddSuccess($"{obj.Name} を削除しました。");
         }, LoadObjectsAsync);
     }
 
     private async Task DeletePrefixAsync(string name)
     {
         var message = $"プレフィックス {name} 配下のオブジェクトをすべて削除します。この操作は取り消せません。確認のためプレフィックス名を入力してください。";
-        if (await DialogService.ShowOperationConfirm("一括削除確認", message, requireConfirmText: name.TrimEnd('/').Split('/').Last()) is null)
+        if (await DialogService.ShowOperationConfirm("一括削除", message, requireConfirmText: name.TrimEnd('/').Split('/').Last()) is null)
         {
             return;
         }
@@ -107,7 +107,7 @@ public sealed partial class ObjectsPage
         await RunAsync("削除中...", async (progress, cancellationToken) =>
         {
             await Service.DeleteObjectsByPrefixAsync(BucketName, name, progress, cancellationToken);
-            Snackbar.AddSuccess($"削除しました: {name}");
+            Snackbar.AddSuccess($"{name} を削除しました。");
         }, LoadObjectsAsync);
     }
 
@@ -117,7 +117,8 @@ public sealed partial class ObjectsPage
         {
             { x => x.BucketName, BucketName },
             { x => x.ObjectName, obj.Name }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private async Task CopyMoveAsync(ObjectInfo obj)
@@ -145,7 +146,7 @@ public sealed partial class ObjectsPage
                 await Service.CopyObjectAsync(BucketName, obj.Name, p.DestinationBucket, p.DestinationName, cancellationToken);
             }
 
-            Snackbar.AddSuccess(p.Move ? "移動しました" : "コピーしました");
+            Snackbar.AddSuccess(p.Move ? "移動しました。" : "コピーしました。");
         }, LoadObjectsAsync);
     }
 
@@ -155,7 +156,8 @@ public sealed partial class ObjectsPage
         {
             { x => x.BucketName, BucketName },
             { x => x.Target, obj }
-        });
+        },
+        Styles.LargeDialog);
     }
 
     private sealed record ObjectRow(string Name, string DisplayName, bool IsPrefix, ObjectInfo? Object);

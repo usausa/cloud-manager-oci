@@ -33,7 +33,7 @@
                 <CompartmentTd Visible="ShowCompartment" Id="@context.CompartmentId" />
                 <MudTd>@(context.Description ?? "-")</MudTd>
                 <MudTd>@context.State</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
             </RowTemplate>
             <PagerContent><MudTablePager /></PagerContent>
         </MudTable>
@@ -91,9 +91,9 @@
                             <MudTh>詳細</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd>@DisplayFormat.Time(context.Timestamp)</MudTd>
+                            <MudTd Class="no-wrap">@DisplayFormat.Time(context.Timestamp)</MudTd>
                             <MudTd><span class="log-text">@context.Message</span></MudTd>
-                            <MudTd>
+                            <MudTd Class="no-wrap">
                                 <MudTooltip Text="JSON を表示">
                                     <MudIconButton Icon="@Icons.Material.Filled.DataObject" Size="Size.Small" OnClick="() => ShowEntryAsync(context)" />
                                 </MudTooltip>

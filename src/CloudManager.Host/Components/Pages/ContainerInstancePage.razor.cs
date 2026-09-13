@@ -28,7 +28,7 @@ public sealed partial class ContainerInstancePage
 
     private async Task StartAsync(ContainerInstanceInfo instance)
     {
-        if (await DialogService.ShowOperationConfirm("Start", $"コンテナインスタンス {instance.DisplayName} を起動しますか？") is null)
+        if (await DialogService.ShowOperationConfirm("起動", $"コンテナインスタンス {instance.DisplayName} を起動しますか？") is null)
         {
             return;
         }
@@ -36,13 +36,13 @@ public sealed partial class ContainerInstancePage
         await RunAsync("起動中...", async (progress, cancellationToken) =>
         {
             await Service.StartAsync(instance.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Start 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を起動しました。");
         }, LoadAsync);
     }
 
     private async Task StopAsync(ContainerInstanceInfo instance)
     {
-        if (await DialogService.ShowOperationConfirm("Stop", $"コンテナインスタンス {instance.DisplayName} を停止しますか？") is null)
+        if (await DialogService.ShowOperationConfirm("停止", $"コンテナインスタンス {instance.DisplayName} を停止しますか？") is null)
         {
             return;
         }
@@ -50,13 +50,13 @@ public sealed partial class ContainerInstancePage
         await RunAsync("停止中...", async (progress, cancellationToken) =>
         {
             await Service.StopAsync(instance.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Stop 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を停止しました。");
         }, LoadAsync);
     }
 
     private async Task RestartAsync(ContainerInstanceInfo instance)
     {
-        if (await DialogService.ShowOperationConfirm("Restart", $"コンテナインスタンス {instance.DisplayName} を再起動しますか？") is null)
+        if (await DialogService.ShowOperationConfirm("再起動", $"コンテナインスタンス {instance.DisplayName} を再起動しますか？") is null)
         {
             return;
         }
@@ -64,7 +64,7 @@ public sealed partial class ContainerInstancePage
         await RunAsync("再起動中...", async (progress, cancellationToken) =>
         {
             await Service.RestartAsync(instance.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Restart 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を再起動しました。");
         }, LoadAsync);
     }
 
@@ -74,7 +74,8 @@ public sealed partial class ContainerInstancePage
         {
             { x => x.ContainerInstanceId, instance.Id },
             { x => x.InstanceName, instance.DisplayName }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private static Color StateColor(string state) => state switch

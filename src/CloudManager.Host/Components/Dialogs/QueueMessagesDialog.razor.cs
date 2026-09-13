@@ -38,7 +38,7 @@ public sealed partial class QueueMessagesDialog
         {
             await Service.DeleteMessageAsync(QueueId, MessagesEndpoint, message.Receipt, cancellationToken);
             messages.Remove(message);
-            Snackbar.AddSuccess($"メッセージ削除完了: {message.Id}");
+            Snackbar.AddSuccess($"メッセージ {message.Id} を削除しました。");
         });
 
     private void Close() => MudDialog.Close();

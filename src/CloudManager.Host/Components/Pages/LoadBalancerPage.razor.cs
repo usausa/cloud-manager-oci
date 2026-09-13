@@ -34,28 +34,19 @@ public sealed partial class LoadBalancerPage
     }
 
     // Load the backend sets of the selected load balancer
-    private async Task OnSelectedAsync(LoadBalancerInfo? loadBalancer)
+    private Task OnSelectedAsync(LoadBalancerInfo? loadBalancer)
     {
         selected = loadBalancer;
         backendSets = [];
         if (loadBalancer is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isDetailLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             backendSets = await Service.ListBackendSetsAsync(loadBalancer.Id, loadBalancer.Type, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isDetailLoading = false;
-        }
+        }, x => isDetailLoading = x);
     }
 
     private async Task ShowBackendHealthAsync(BackendSetInfo backendSet)
@@ -65,7 +56,8 @@ public sealed partial class LoadBalancerPage
             { x => x.LoadBalancerId, selected!.Id },
             { x => x.LoadBalancerType, selected.Type },
             { x => x.BackendSetName, backendSet.Name }
-        });
+        },
+        Styles.LargeDialog);
     }
 
     private static Color HealthColor(string status) => status switch

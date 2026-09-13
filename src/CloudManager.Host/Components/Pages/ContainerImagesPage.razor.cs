@@ -29,7 +29,7 @@ public sealed partial class ContainerImagesPage
         var name = image.Version ?? image.Digest;
         var shortDigest = image.Digest.Length > 19 ? image.Digest[^7..] : image.Digest;
         var message = $"イメージ「{name}」を削除します。確認のためダイジェスト末尾 ({shortDigest}) を入力してください。";
-        if (await DialogService.ShowOperationConfirm("イメージ削除確認", message, requireConfirmText: shortDigest) is null)
+        if (await DialogService.ShowOperationConfirm("イメージ削除", message, requireConfirmText: shortDigest) is null)
         {
             return;
         }
@@ -37,7 +37,7 @@ public sealed partial class ContainerImagesPage
         await RunAsync("削除中...", async (_, cancellationToken) =>
         {
             await Service.DeleteImageAsync(image.Id, cancellationToken);
-            Snackbar.AddSuccess($"イメージ削除完了: {name}");
+            Snackbar.AddSuccess($"{name} を削除しました。");
         }, LoadAsync);
     }
 }

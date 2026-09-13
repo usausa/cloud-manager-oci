@@ -33,18 +33,18 @@
         <MudTd>@context.Shape @(context.Ocpus.HasValue ? $"({context.Ocpus} OCPU / {context.MemoryGb} GB)" : string.Empty)</MudTd>
         <MudTd>@context.ContainerCount</MudTd>
         <MudTd>@context.AvailabilityDomain</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-        <MudTd>
-            <MudTooltip Text="Start">
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">
+            <MudTooltip Text="起動">
                 <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small"
                                Disabled="IsRunning" OnClick="() => StartAsync(context)" />
             </MudTooltip>
-            <MudTooltip Text="Stop">
+            <MudTooltip Text="停止">
                 <MudIconButton Icon="@Icons.Material.Filled.Stop" Size="Size.Small"
                                Disabled="IsRunning" OnClick="() => StopAsync(context)" />
             </MudTooltip>
-            <MudTooltip Text="Restart">
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small"
+            <MudTooltip Text="再起動">
+                <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Size="Size.Small"
                                Disabled="IsRunning" OnClick="() => RestartAsync(context)" />
             </MudTooltip>
             <MudTooltip Text="コンテナ一覧">

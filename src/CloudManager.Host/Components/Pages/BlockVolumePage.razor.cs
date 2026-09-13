@@ -54,7 +54,7 @@ public sealed partial class BlockVolumePage
         await RunAsync("バックアップ作成中...", async (_, cancellationToken) =>
         {
             var id = await Service.CreateBackupAsync(volume.Id, volume.IsBootVolume, displayName, cancellationToken);
-            Snackbar.AddSuccess($"バックアップを作成しました: {DisplayFormat.Ocid(id)}");
+            Snackbar.AddSuccess($"バックアップ {DisplayFormat.Ocid(id)} を作成しました。");
         });
     }
 
@@ -74,13 +74,13 @@ public sealed partial class BlockVolumePage
         await RunAsync("アタッチ中...", async (_, cancellationToken) =>
         {
             await Service.AttachAsync(volume.Id, p.InstanceId, p.AttachmentType, p.Device, cancellationToken);
-            Snackbar.AddSuccess("ボリュームをアタッチしました");
+            Snackbar.AddSuccess("ボリュームをアタッチしました。");
         }, LoadAsync);
     }
 
     private async Task DetachAsync(BlockVolumeInfo volume)
     {
-        if (await DialogService.ShowOperationConfirm("デタッチ確認", $"ボリューム {volume.DisplayName} をデタッチしますか？確認のためボリューム名を入力してください。", requireConfirmText: volume.DisplayName) is null)
+        if (await DialogService.ShowOperationConfirm("デタッチ", $"ボリューム {volume.DisplayName} をデタッチしますか？確認のためボリューム名を入力してください。", requireConfirmText: volume.DisplayName) is null)
         {
             return;
         }
@@ -88,7 +88,7 @@ public sealed partial class BlockVolumePage
         await RunAsync("デタッチ中...", async (_, cancellationToken) =>
         {
             await Service.DetachAsync(volume.AttachmentId!, cancellationToken);
-            Snackbar.AddSuccess("ボリュームをデタッチしました");
+            Snackbar.AddSuccess("ボリュームをデタッチしました。");
         }, LoadAsync);
     }
 

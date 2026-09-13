@@ -18,7 +18,7 @@
                     <MudTd><span title="@context.Id">@context.DisplayName</span></MudTd>
                     <MudTd>@context.State</MudTd>
                     <MudTd class="break-all">@(context.Image ?? "-")</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
                 </RowTemplate>
             </MudTable>
         }

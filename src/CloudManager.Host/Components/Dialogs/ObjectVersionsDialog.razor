@@ -24,8 +24,8 @@
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>@context.VersionId</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeModified)</MudTd>
-                    <MudTd>@(context.IsDeleteMarker ? "-" : DisplayFormat.Size(context.Size))</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeModified)</MudTd>
+                    <MudTd Class="no-wrap">@(context.IsDeleteMarker ? "-" : DisplayFormat.Size(context.Size))</MudTd>
                     <MudTd>@(context.IsLatest ? "✓" : "")</MudTd>
                     <MudTd>@(context.IsDeleteMarker ? "✓" : "")</MudTd>
                     <MudTd>

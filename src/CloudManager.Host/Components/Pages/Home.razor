@@ -92,7 +92,7 @@ else
                     <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
                         <div>
                             <MudText Typo="Typo.subtitle2">今月のコスト (@CurrentMonthLabel / @(IsTenancyScope ? "テナンシ全体" : "現在のコンパートメント"))</MudText>
-                            <MudText Typo="Typo.h4" Color="Color.Primary" Class="nowrap">
+                            <MudText Typo="Typo.h4" Color="Color.Primary" Class="no-wrap">
                                 @FormatAmount(costCurrentMonth)
                                 <MudText Typo="Typo.subtitle1" Inline="true">@costCurrency</MudText>
                             </MudText>

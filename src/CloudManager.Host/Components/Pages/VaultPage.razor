@@ -44,16 +44,16 @@
         <MudTd><MudChip T="string" Size="Size.Small" Color="@(context.State == "ACTIVE" ? Color.Success : Color.Default)">@context.State</MudChip></MudTd>
         <MudTd><span title="@context.VaultId">@DisplayFormat.Ocid(context.VaultId)</span></MudTd>
         <MudTd>@context.RotationStatus</MudTd>
-        <MudTd>@DisplayFormat.Time(context.LastRotationTime)</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeOfCurrentVersionExpiry)</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-        <MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.LastRotationTime)</MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeOfCurrentVersionExpiry)</MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">
             <MudTooltip Text="値を表示">
                 <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
                                Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => ShowValueAsync(context)" />
             </MudTooltip>
             <MudTooltip Text="ローテーション">
-                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Warning"
+                <MudIconButton Icon="@Icons.Material.Filled.Autorenew" Size="Size.Small" Color="Color.Warning"
                                Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => RotateAsync(context)" />
             </MudTooltip>
         </MudTd>

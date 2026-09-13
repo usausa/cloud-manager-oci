@@ -46,26 +46,17 @@ public sealed partial class DnsPage
         return zone is null ? Task.CompletedTask : LoadRecordsAsync();
     }
 
-    private async Task LoadRecordsAsync()
+    private Task LoadRecordsAsync()
     {
         if (selectedZone is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        isRecordsLoading = true;
-        try
+        return LoadAsync(async () =>
         {
             records = await Service.ListRecordsAsync(selectedZone.Id, selectedZone.Scope, CancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            ErrorMessage = FormatError(ex);
-        }
-        finally
-        {
-            isRecordsLoading = false;
-        }
+        }, x => isRecordsLoading = x);
     }
 
     // SOA and NS at the apex are managed by the service
@@ -83,7 +74,8 @@ public sealed partial class DnsPage
         {
             { x => x.ZoneName, selectedZone.Name },
             { x => x.Record, record }
-        });
+        },
+        Styles.MediumDialog);
         var result = await dialog.Result;
         if (result is null || result.Canceled)
         {
@@ -94,7 +86,7 @@ public sealed partial class DnsPage
         await RunAsync("保存中...", async (_, cancellationToken) =>
         {
             await Service.UpsertRecordAsync(selectedZone.Id, selectedZone.Scope, p.Domain, p.Rtype, p.Ttl, p.Values, cancellationToken);
-            Snackbar.AddSuccess($"レコード保存完了: {p.Domain}");
+            Snackbar.AddSuccess($"{p.Domain} を保存しました。");
             await LoadRecordsAsync();
         });
     }
@@ -106,7 +98,7 @@ public sealed partial class DnsPage
             return;
         }
 
-        if (await DialogService.ShowOperationConfirm("レコード削除確認", $"レコード「{record.Domain} ({record.Rtype})」を削除します。") is null)
+        if (await DialogService.ShowOperationConfirm("レコード削除", $"レコード「{record.Domain} ({record.Rtype})」を削除しますか？") is null)
         {
             return;
         }
@@ -114,7 +106,7 @@ public sealed partial class DnsPage
         await RunAsync("削除中...", async (_, cancellationToken) =>
         {
             await Service.DeleteRecordAsync(selectedZone.Id, selectedZone.Scope, record.Domain, record.Rtype, cancellationToken);
-            Snackbar.AddSuccess($"レコード削除完了: {record.Domain}");
+            Snackbar.AddSuccess($"{record.Domain} を削除しました。");
             await LoadRecordsAsync();
         });
     }

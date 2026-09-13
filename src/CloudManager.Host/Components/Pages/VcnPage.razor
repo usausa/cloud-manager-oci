@@ -31,7 +31,7 @@
                 <MudTd>@context.CidrBlocks</MudTd>
                 <MudTd>@context.State</MudTd>
                 <MudTd>@(context.DnsLabel ?? "-")</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
             </RowTemplate>
         </MudTable>
     </MudTabPanel>

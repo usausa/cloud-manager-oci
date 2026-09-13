@@ -36,7 +36,7 @@
         <MudTd>@context.IpAddresses</MudTd>
         <MudTd>@context.BackendSetCount</MudTd>
         <MudTd>@context.ListenerCount</MudTd>
-        <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
+        <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
     </RowTemplate>
     <PagerContent><MudTablePager /></PagerContent>
 </MudTable>
@@ -59,7 +59,7 @@
             <MudTd>@context.BackendCount</MudTd>
             <MudTd><MudChip T="string" Size="Size.Small" Color="@HealthColor(context.HealthStatus)">@context.HealthStatus</MudChip></MudTd>
             <MudTd>@context.HealthCheckProtocol:@context.HealthCheckPort @context.HealthCheckPath</MudTd>
-            <MudTd>
+            <MudTd Class="no-wrap">
                 <MudTooltip Text="バックエンドヘルス">
                     <MudIconButton Icon="@Icons.Material.Filled.MonitorHeart" Size="Size.Small"
                                    OnClick="() => ShowBackendHealthAsync(context)" />

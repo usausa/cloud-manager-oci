@@ -38,7 +38,7 @@ public sealed partial class ComputePage
 
     private async Task StartAsync(ComputeInstanceInfo instance)
     {
-        if (await DialogService.ShowOperationConfirm("Start", $"インスタンス {instance.DisplayName} を起動しますか？") is null)
+        if (await DialogService.ShowOperationConfirm("起動", $"インスタンス {instance.DisplayName} を起動しますか？") is null)
         {
             return;
         }
@@ -46,13 +46,13 @@ public sealed partial class ComputePage
         await RunAsync("起動中...", async (progress, cancellationToken) =>
         {
             await Service.StartAsync(instance.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Start 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を起動しました。");
         }, LoadAsync);
     }
 
     private async Task StopAsync(ComputeInstanceInfo instance)
     {
-        var result = await DialogService.ShowOperationConfirm("Stop", $"インスタンス {instance.DisplayName} を停止しますか？(強制指定なしは SOFTSTOP)", showForce: true);
+        var result = await DialogService.ShowOperationConfirm("停止", $"インスタンス {instance.DisplayName} を停止しますか？(強制指定なしは SOFTSTOP)", showForce: true);
         if (result is null)
         {
             return;
@@ -61,13 +61,13 @@ public sealed partial class ComputePage
         await RunAsync("停止中...", async (progress, cancellationToken) =>
         {
             await Service.StopAsync(instance.Id, result.Force, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Stop 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を停止しました。");
         }, LoadAsync);
     }
 
     private async Task RebootAsync(ComputeInstanceInfo instance)
     {
-        var result = await DialogService.ShowOperationConfirm("Reboot", $"インスタンス {instance.DisplayName} を再起動しますか？(強制指定なしは SOFTRESET)", showForce: true);
+        var result = await DialogService.ShowOperationConfirm("再起動", $"インスタンス {instance.DisplayName} を再起動しますか？(強制指定なしは SOFTRESET)", showForce: true);
         if (result is null)
         {
             return;
@@ -76,14 +76,14 @@ public sealed partial class ComputePage
         await RunAsync("再起動中...", async (_, cancellationToken) =>
         {
             await Service.RebootAsync(instance.Id, result.Force, cancellationToken);
-            Snackbar.AddSuccess($"Reboot 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を再起動しました。");
         }, LoadAsync);
     }
 
     private async Task TerminateAsync(ComputeInstanceInfo instance)
     {
         var message = $"インスタンス {instance.DisplayName} をブートボリュームごと終了(削除)します。この操作は取り消せません。確認のためインスタンス名を入力してください。";
-        if (await DialogService.ShowOperationConfirm("Terminate", message, requireConfirmText: instance.DisplayName) is null)
+        if (await DialogService.ShowOperationConfirm("終了", message, requireConfirmText: instance.DisplayName) is null)
         {
             return;
         }
@@ -91,7 +91,7 @@ public sealed partial class ComputePage
         await RunAsync("終了中...", async (progress, cancellationToken) =>
         {
             await Service.TerminateAsync(instance.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Terminate 完了: {instance.DisplayName}");
+            Snackbar.AddSuccess($"{instance.DisplayName} を終了しました。");
         }, LoadAsync);
     }
 
@@ -102,7 +102,8 @@ public sealed partial class ComputePage
             new DialogParameters<RunCommandDialog>
             {
                 { x => x.InstanceName, instance.DisplayName }
-            });
+            },
+            Styles.MediumDialog);
         var result = await dialog.Result;
         if (result is null || result.Canceled)
         {
@@ -115,11 +116,11 @@ public sealed partial class ComputePage
             commandResult = await Service.RunCommandAsync(instance.Id, parameters.Command, parameters.TimeoutSeconds, progress, cancellationToken);
             if (commandResult.Status == "SUCCEEDED")
             {
-                Snackbar.AddSuccess($"コマンド完了: {instance.DisplayName}");
+                Snackbar.AddSuccess($"{instance.DisplayName} でコマンドを実行しました。");
             }
             else
             {
-                Snackbar.AddWarning($"コマンド終了 [{commandResult.Status}]: {instance.DisplayName}");
+                Snackbar.AddWarning($"{instance.DisplayName} のコマンドが {commandResult.Status} で終了しました。");
             }
         });
     }
@@ -137,7 +138,7 @@ public sealed partial class ComputePage
                 { x => x.Metrics, MetricNames },
                 { x => x.Unit, "%" }
             },
-            new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true });
+            Styles.LargeDialog);
     }
 
     private static Color StateColor(string state) => state switch

@@ -26,9 +26,9 @@
                     <MudTd><span title="@context.Id">@context.OperationType</span></MudTd>
                     <MudTd>@context.Status</MudTd>
                     <MudTd>@(context.PercentComplete.HasValue ? $"{context.PercentComplete:F0}%" : "-")</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeAccepted)</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeStarted)</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.TimeFinished)</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeAccepted)</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeStarted)</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeFinished)</MudTd>
                 </RowTemplate>
                 <PagerContent><MudTablePager /></PagerContent>
             </MudTable>

@@ -36,8 +36,8 @@
                 <MudTd>@(context.Description ?? "-")</MudTd>
                 <MudTd>@context.State</MudTd>
                 <MudTd>@context.SubscriptionCount</MudTd>
-                <MudTd>@DisplayFormat.Time(context.TimeCreated)</MudTd>
-                <MudTd>
+                <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeCreated)</MudTd>
+                <MudTd Class="no-wrap">
                     <MudTooltip Text="メッセージ発行">
                         <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Small"
                                        Disabled="@(IsRunning || context.State != "ACTIVE")" OnClick="() => PublishAsync(context)" />
@@ -63,7 +63,7 @@
                     <MudTd>@context.Protocol</MudTd>
                     <MudTd class="break-all"><span title="@context.Id">@context.Endpoint</span></MudTd>
                     <MudTd>@context.State</MudTd>
-                    <MudTd>@DisplayFormat.Time(context.CreatedTime)</MudTd>
+                    <MudTd Class="no-wrap">@DisplayFormat.Time(context.CreatedTime)</MudTd>
                 </RowTemplate>
                 <PagerContent><MudTablePager /></PagerContent>
                 <NoRecordsContent><MudText>サブスクリプションがありません。</MudText></NoRecordsContent>

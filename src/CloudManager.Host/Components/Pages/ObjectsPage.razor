@@ -46,7 +46,7 @@
             <MudTd>-</MudTd>
             <MudTd>-</MudTd>
             <MudTd>-</MudTd>
-            <MudTd>
+            <MudTd Class="no-wrap">
                 <MudTooltip Text="配下をすべて削除">
                     <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Size="Size.Small" Color="Color.Error"
                                    Disabled="IsRunning" OnClick="() => DeletePrefixAsync(context.Name)" />
@@ -57,10 +57,10 @@
         {
             var obj = context.Object!;
             <MudTd><span title="@obj.Name">@context.DisplayName</span></MudTd>
-            <MudTd>@DisplayFormat.Size(obj.Size)</MudTd>
-            <MudTd>@DisplayFormat.Time(obj.TimeModified)</MudTd>
+            <MudTd Class="no-wrap">@DisplayFormat.Size(obj.Size)</MudTd>
+            <MudTd Class="no-wrap">@DisplayFormat.Time(obj.TimeModified)</MudTd>
             <MudTd>@obj.StorageTier</MudTd>
-            <MudTd>
+            <MudTd Class="no-wrap">
                 <MudTooltip Text="ダウンロード">
                     <MudIconButton Icon="@Icons.Material.Filled.Download" Size="Size.Small"
                                    Disabled="IsRunning" Href="@DownloadUrl(obj)" />

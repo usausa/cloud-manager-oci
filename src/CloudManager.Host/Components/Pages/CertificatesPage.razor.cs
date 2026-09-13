@@ -29,7 +29,8 @@ public sealed partial class CertificatesPage
         {
             { x => x.CertificateId, certificate.Id },
             { x => x.CertificateName, certificate.Name }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private static Color ExpiryColor(int days) => days switch

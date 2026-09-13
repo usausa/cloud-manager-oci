@@ -51,7 +51,7 @@ public sealed partial class AutonomousDatabasePage
 
     private async Task StartAsync(AutonomousDatabaseInfo database)
     {
-        if (await DialogService.ShowOperationConfirm("ADB Start", $"データベース {database.DisplayName} を起動しますか？") is null)
+        if (await DialogService.ShowOperationConfirm("起動", $"データベース {database.DisplayName} を起動しますか？") is null)
         {
             return;
         }
@@ -59,13 +59,13 @@ public sealed partial class AutonomousDatabasePage
         await RunAsync("起動中...", async (progress, cancellationToken) =>
         {
             await Service.StartAsync(database.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Start 完了: {database.DisplayName}");
+            Snackbar.AddSuccess($"{database.DisplayName} を起動しました。");
         }, LoadAsync);
     }
 
     private async Task StopAsync(AutonomousDatabaseInfo database)
     {
-        if (await DialogService.ShowOperationConfirm("ADB Stop", $"データベース {database.DisplayName} を停止しますか？") is null)
+        if (await DialogService.ShowOperationConfirm("停止", $"データベース {database.DisplayName} を停止しますか？") is null)
         {
             return;
         }
@@ -73,13 +73,13 @@ public sealed partial class AutonomousDatabasePage
         await RunAsync("停止中...", async (progress, cancellationToken) =>
         {
             await Service.StopAsync(database.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Stop 完了: {database.DisplayName}");
+            Snackbar.AddSuccess($"{database.DisplayName} を停止しました。");
         }, LoadAsync);
     }
 
     private async Task RestartAsync(AutonomousDatabaseInfo database)
     {
-        if (await DialogService.ShowOperationConfirm("ADB Restart", $"データベース {database.DisplayName} を再起動しますか？接続中のセッションは切断されます。") is null)
+        if (await DialogService.ShowOperationConfirm("再起動", $"データベース {database.DisplayName} を再起動しますか？接続中のセッションは切断されます。") is null)
         {
             return;
         }
@@ -87,7 +87,7 @@ public sealed partial class AutonomousDatabasePage
         await RunAsync("再起動中...", async (progress, cancellationToken) =>
         {
             await Service.RestartAsync(database.Id, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"Restart 完了: {database.DisplayName}");
+            Snackbar.AddSuccess($"{database.DisplayName} を再起動しました。");
         }, LoadAsync);
     }
 
@@ -107,7 +107,7 @@ public sealed partial class AutonomousDatabasePage
         await RunAsync("バックアップ作成中...", async (progress, cancellationToken) =>
         {
             await Service.CreateBackupAsync(database.Id, displayName, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"バックアップ作成完了: {displayName}");
+            Snackbar.AddSuccess($"{displayName} を作成しました。");
         }, LoadAsync);
     }
 
@@ -117,7 +117,7 @@ public sealed partial class AutonomousDatabasePage
         var name = DatabaseName(backup.DatabaseId);
         var timestamp = backup.TimeEnded!.Value;
         var message = $"データベース {name} を {DisplayFormat.Time(timestamp)} 時点へ復元(上書き)します。現在のデータは失われます。確認のためデータベース名を入力してください。";
-        if (await DialogService.ShowOperationConfirm("ADB 復元", message, requireConfirmText: name) is null)
+        if (await DialogService.ShowOperationConfirm("復元", message, requireConfirmText: name) is null)
         {
             return;
         }
@@ -125,7 +125,7 @@ public sealed partial class AutonomousDatabasePage
         await RunAsync("復元中...", async (progress, cancellationToken) =>
         {
             await Service.RestoreAsync(backup.DatabaseId, timestamp, wait: true, WaitTimeoutSeconds, progress, cancellationToken);
-            Snackbar.AddSuccess($"復元完了: {name}");
+            Snackbar.AddSuccess($"{name} を復元しました。");
         }, LoadAsync);
     }
 
@@ -139,7 +139,7 @@ public sealed partial class AutonomousDatabasePage
         await RunAsync("削除中...", async (_, cancellationToken) =>
         {
             await Service.DeleteBackupAsync(backup.Id, cancellationToken);
-            Snackbar.AddSuccess($"バックアップ削除完了: {backup.DisplayName}");
+            Snackbar.AddSuccess($"{backup.DisplayName} を削除しました。");
         }, LoadBackupsAsync);
     }
 
@@ -149,7 +149,8 @@ public sealed partial class AutonomousDatabasePage
         {
             { x => x.DatabaseId, database.Id },
             { x => x.DatabaseName, database.DisplayName }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private async Task ShowWorkRequestsAsync(AutonomousDatabaseInfo database)
@@ -159,7 +160,8 @@ public sealed partial class AutonomousDatabasePage
             { x => x.CompartmentId, database.CompartmentId },
             { x => x.ResourceId, database.Id },
             { x => x.ResourceName, database.DisplayName }
-        });
+        },
+        Styles.MediumDialog);
     }
 
     private static Color StateColor(string state) => state switch
