@@ -1,0 +1,71 @@
+// ReSharper disable RedundantUsingDirective.Global
+#pragma warning disable
+global using System;
+global using System.Buffers;
+global using System.Collections;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.ComponentModel.DataAnnotations;
+global using System.Data;
+global using System.Data.Common;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Globalization;
+global using System.IO;
+global using System.Linq;
+global using System.Net;
+global using System.Net.Http;
+global using System.Runtime;
+global using System.Runtime.CompilerServices;
+global using System.Security.Claims;
+global using System.Text;
+global using System.Threading;
+global using System.Threading.Tasks;
+
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Http.HttpResults;
+global using Microsoft.AspNetCore.Mvc;
+
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+
+global using Smart;
+global using Smart.Collections.Generic;
+global using Smart.ComponentModel;
+global using Smart.IO;
+global using Smart.Linq;
+global using Smart.Text;
+
+// ReSharper disable MissingBlankLines
+global using CloudManager;
+global using CloudManager.Models;
+global using CloudManager.Models.Entity;
+global using CloudManager.Models.Jobs;
+global using CloudManager.Models.Aws.Acm;
+global using CloudManager.Models.Aws.ApiGateway;
+global using CloudManager.Models.Aws.CloudFront;
+global using CloudManager.Models.Aws.CloudWatch;
+global using CloudManager.Models.Aws.CloudWatchLogs;
+global using CloudManager.Models.Aws.Cognito;
+global using CloudManager.Models.Aws.Cost;
+global using CloudManager.Models.Aws.DynamoDb;
+global using CloudManager.Models.Aws.Ebs;
+global using CloudManager.Models.Aws.Ec2;
+global using CloudManager.Models.Aws.Ecr;
+global using CloudManager.Models.Aws.Ecs;
+global using CloudManager.Models.Aws.ElasticIp;
+global using CloudManager.Models.Aws.Elb;
+global using CloudManager.Models.Aws.EventBridge;
+global using CloudManager.Models.Aws.Lambda;
+global using CloudManager.Models.Aws.Rds;
+global using CloudManager.Models.Aws.Route53;
+global using CloudManager.Models.Aws.S3;
+global using CloudManager.Models.Aws.SecretsManager;
+global using CloudManager.Models.Aws.Sns;
+global using CloudManager.Models.Aws.Sqs;
+global using CloudManager.Models.Aws.SsmParameter;
+global using CloudManager.Models.Aws.Vpc;
+global using CloudManager.Services;
+global using CloudManager.Services.Aws;
+global using CloudManager.Host.Application;
+global using CloudManager.Host.Settings;
