@@ -1,6 +1,8 @@
 namespace CloudManager.Infrastructure.OracleCloud;
 
+using Oci.ApigatewayService;
 using Oci.ArtifactsService;
+using Oci.BastionService;
 using Oci.CertificatesmanagementService;
 using Oci.Common;
 using Oci.ComputeinstanceagentService;
@@ -8,15 +10,24 @@ using Oci.ContainerinstancesService;
 using Oci.CoreService;
 using Oci.DatabaseService;
 using Oci.DnsService;
+using Oci.EventsService;
 using Oci.FunctionsService;
+using Oci.IdentitydomainsService;
 using Oci.IdentityService;
 using Oci.LoadbalancerService;
+using Oci.LoggingsearchService;
+using Oci.LoggingService;
 using Oci.MonitoringService;
 using Oci.NetworkloadbalancerService;
 using Oci.NosqlService;
 using Oci.ObjectstorageService;
 using Oci.ObjectstorageService.Requests;
+using Oci.OnsService;
+using Oci.QueueService;
 using Oci.ResourcesearchService;
+using Oci.SecretsService;
+using Oci.UsageapiService;
+using Oci.VaultService;
 using Oci.WorkrequestsService;
 
 // Creates OCI clients, resolving the profile, region and compartment on every call
@@ -132,8 +143,60 @@ public sealed class OciClientFactory
     public CertificatesManagementClient CreateCertificatesManagementClient() => Configure(new CertificatesManagementClient(Resolve().Provider));
 
     //--------------------------------------------------------------------------------
-    // Monitoring
+    // API / Messaging
+    //--------------------------------------------------------------------------------
+
+    public GatewayClient CreateGatewayClient() => Configure(new GatewayClient(Resolve().Provider));
+
+    public DeploymentClient CreateDeploymentClient() => Configure(new DeploymentClient(Resolve().Provider));
+
+    public EventsClient CreateEventsClient() => Configure(new EventsClient(Resolve().Provider));
+
+    public QueueAdminClient CreateQueueAdminClient() => Configure(new QueueAdminClient(Resolve().Provider));
+
+    // The messages endpoint differs per queue
+    public QueueClient CreateQueueClient(string messagesEndpoint)
+    {
+        var client = new QueueClient(Resolve().Provider);
+        client.SetEndpoint(messagesEndpoint);
+        return client;
+    }
+
+    public NotificationControlPlaneClient CreateNotificationControlPlaneClient() => Configure(new NotificationControlPlaneClient(Resolve().Provider));
+
+    public NotificationDataPlaneClient CreateNotificationDataPlaneClient() => Configure(new NotificationDataPlaneClient(Resolve().Provider));
+
+    //--------------------------------------------------------------------------------
+    // Monitoring / Logging
     //--------------------------------------------------------------------------------
 
     public MonitoringClient CreateMonitoringClient() => Configure(new MonitoringClient(Resolve().Provider));
+
+    public LoggingManagementClient CreateLoggingManagementClient() => Configure(new LoggingManagementClient(Resolve().Provider));
+
+    public LogSearchClient CreateLogSearchClient() => Configure(new LogSearchClient(Resolve().Provider));
+
+    //--------------------------------------------------------------------------------
+    // Security / Identity
+    //--------------------------------------------------------------------------------
+
+    public VaultsClient CreateVaultsClient() => Configure(new VaultsClient(Resolve().Provider));
+
+    public SecretsClient CreateSecretsClient() => Configure(new SecretsClient(Resolve().Provider));
+
+    // Identity domains are addressed by their own endpoint
+    public IdentityDomainsClient CreateIdentityDomainsClient(string domainEndpoint)
+    {
+        var client = new IdentityDomainsClient(Resolve().Provider);
+        client.SetEndpoint(domainEndpoint);
+        return client;
+    }
+
+    public BastionClient CreateBastionClient() => Configure(new BastionClient(Resolve().Provider));
+
+    //--------------------------------------------------------------------------------
+    // Cost
+    //--------------------------------------------------------------------------------
+
+    public UsageapiClient CreateUsageapiClient() => Configure(new UsageapiClient(Resolve().Provider));
 }
