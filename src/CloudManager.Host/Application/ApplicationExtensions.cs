@@ -9,6 +9,7 @@ using System.Text.Unicode;
 
 using CloudManager.Accessors;
 using CloudManager.Host.Components;
+using CloudManager.Host.Endpoints;
 using CloudManager.Host.Infrastructure.ExceptionHandling;
 using CloudManager.Host.Infrastructure.HealthChecks;
 using CloudManager.Host.Infrastructure.Jobs;
@@ -334,6 +335,9 @@ public static class ApplicationExtensions
         // Blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
+
+        // API
+        app.MapObjectStorageEndpoints();
 
         // Health
         app.MapHealthChecks(HealthEndpointPath);

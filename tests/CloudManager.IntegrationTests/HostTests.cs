@@ -67,4 +67,33 @@ public sealed class HostTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Empty(content);
     }
+
+    [Fact]
+    public async Task ObjectStorageDownloadWithoutNameReturnsBadRequest()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+
+        // Act
+        var response = await client.GetAsync(new Uri("/api/objectstorage/download/bucket?profile=cloudmanager-test", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // An unknown profile returns ProblemDetails without calling OCI
+    [Fact]
+    public async Task ObjectStorageDownloadWithUnknownProfileReturnsProblem()
+    {
+        // Arrange
+        var client = factory.CreateClient();
+
+        // Act
+        var response = await client.GetAsync(new Uri("/api/objectstorage/download/bucket?name=file.txt&profile=cloudmanager-test&region=ap-tokyo-1", UriKind.Relative), TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("cloudmanager-test", content, StringComparison.Ordinal);
+    }
 }

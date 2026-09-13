@@ -10,6 +10,10 @@ public static class OciValues
         where T : struct, Enum =>
         value.HasValue ? HttpUtils.GetEnumString(value.Value) : "-";
 
+    public static string State<T>(T value)
+        where T : struct, Enum =>
+        HttpUtils.GetEnumString(value);
+
     // Resource Search returns mixed-case states, so normalize before comparing
     public static bool IsState(string? value, string state) =>
         String.Equals(value, state, StringComparison.OrdinalIgnoreCase);
