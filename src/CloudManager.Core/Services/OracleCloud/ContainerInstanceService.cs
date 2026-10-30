@@ -26,7 +26,6 @@ public sealed class ContainerInstanceService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return instances
             .Select(static x => new ContainerInstanceInfo(
                 x.Id,
@@ -41,7 +40,6 @@ public sealed class ContainerInstanceService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Starts a container instance, polling until ACTIVE when wait is set
@@ -90,7 +88,6 @@ public sealed class ContainerInstanceService
             static x => x.ContainerCollection.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return containers
             .Select(static x => new ContainerInfo(
                 x.Id,
@@ -100,7 +97,6 @@ public sealed class ContainerInstanceService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     private static ValueTask WaitForStateAsync(ContainerInstanceClient client, string containerInstanceId, string targetState, int timeoutSeconds, IProgress<ProgressUpdate> progress, CancellationToken cancellationToken) =>

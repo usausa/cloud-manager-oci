@@ -31,7 +31,6 @@ public sealed class NosqlService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return tables
             .Select(static x => new NosqlTableInfo(
                 x.Id,
@@ -45,7 +44,6 @@ public sealed class NosqlService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.Name, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Schema of a table; the compartment resolves the table name
@@ -54,14 +52,12 @@ public sealed class NosqlService
         using var nosql = factory.CreateNosqlClient();
         var response = await nosql.GetTable(new GetTableRequest { TableNameOrId = tableNameOrId, CompartmentId = compartmentId }, cancellationToken: cancellationToken);
         var table = response.Table;
-#pragma warning disable IDE0028
         return new NosqlTableDetail(
             table.Name,
             table.DdlStatement,
             table.Schema?.Ttl,
             (table.Schema?.Columns ?? []).Select(static x => new NosqlColumnInfo(x.Name, x.Type, x.IsNullable ?? true)).ToList(),
             table.Schema?.PrimaryKey ?? []);
-#pragma warning restore IDE0028
     }
 
     // Runs a SQL statement (e.g. SELECT * FROM t) in the compartment of the table and returns up to limit rows

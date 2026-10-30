@@ -46,7 +46,6 @@ public sealed partial class MetricsChart
 
         // Only every n-th label is shown so that dense series stay readable
         var step = Math.Max(1, (int)Math.Ceiling(timestamps.Count / (double)MaxLabels));
-#pragma warning disable IDE0028
         labels = timestamps
             .Select((x, i) => i % step == 0 ? x.ToLocalTime().ToString(LabelFormat, CultureInfo.InvariantCulture) : string.Empty)
             .ToArray();
@@ -62,6 +61,5 @@ public sealed partial class MetricsChart
                 };
             })
             .ToList();
-#pragma warning restore IDE0028
     }
 }

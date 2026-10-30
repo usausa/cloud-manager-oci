@@ -27,7 +27,6 @@ public sealed class ApiGatewayService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return gateways
             .Select(static x => new ApiGatewayInfo(
                 x.Id,
@@ -39,7 +38,6 @@ public sealed class ApiGatewayService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Deployments of a gateway; they may live in any compartment in scope
@@ -53,7 +51,6 @@ public sealed class ApiGatewayService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return deployments
             .Select(static x => new ApiDeploymentInfo(
                 x.Id,
@@ -64,7 +61,6 @@ public sealed class ApiGatewayService
                 x.TimeUpdated))
             .OrderBy(static x => x.PathPrefix, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 }
 #pragma warning restore CA1724

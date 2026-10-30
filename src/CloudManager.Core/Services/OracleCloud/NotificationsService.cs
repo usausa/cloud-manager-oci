@@ -37,7 +37,6 @@ public sealed class NotificationsService
             .GroupBy(static x => x.TopicId, StringComparer.Ordinal)
             .ToDictionary(static g => g.Key, static g => g.Count(), StringComparer.Ordinal);
 
-#pragma warning disable IDE0028
         return topics
             .Select(x => new TopicInfo(
                 x.TopicId,
@@ -49,7 +48,6 @@ public sealed class NotificationsService
                 x.TimeCreated))
             .OrderBy(static x => x.Name, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Subscriptions of a topic; they may live in any compartment in scope
@@ -63,12 +61,10 @@ public sealed class NotificationsService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return subscriptions
             .Select(static x => new SubscriptionInfo(x.Id, x.Protocol, x.Endpoint, OciValues.State(x.LifecycleState), x.CreatedTime.HasValue ? DateTimeOffset.FromUnixTimeMilliseconds(x.CreatedTime.Value).UtcDateTime : null))
             .OrderBy(static x => x.Endpoint, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Publishes a message and returns its id

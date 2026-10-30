@@ -41,7 +41,6 @@ public sealed class EventsService
             },
             cancellationToken);
 
-#pragma warning disable IDE0028
         return details
             .Select(static x => new EventRuleInfo(
                 x.Id,
@@ -55,7 +54,6 @@ public sealed class EventsService
                 x.TimeCreated))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     public async ValueTask EnableRuleAsync(string ruleId, CancellationToken cancellationToken = default)

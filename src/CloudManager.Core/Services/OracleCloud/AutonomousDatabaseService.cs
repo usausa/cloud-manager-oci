@@ -28,7 +28,6 @@ public sealed class AutonomousDatabaseService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return databases
             .Select(static x => new AutonomousDatabaseInfo(
                 x.Id,
@@ -47,7 +46,6 @@ public sealed class AutonomousDatabaseService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Starts a database, polling until AVAILABLE when wait is set
@@ -94,7 +92,6 @@ public sealed class AutonomousDatabaseService
             ? await factory.ListInScopeAsync(compartmentId => ListBackupsAsync(database, compartmentId, null, cancellationToken), cancellationToken)
             : await ListBackupsAsync(database, null, databaseId, cancellationToken);
 
-#pragma warning disable IDE0028
         return backups
             .Select(static x => new AutonomousDatabaseBackupInfo(
                 x.Id,
@@ -110,7 +107,6 @@ public sealed class AutonomousDatabaseService
                 x.RetentionPeriodInDays))
             .OrderByDescending(static x => x.TimeStarted)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Creates a manual backup, polling until ACTIVE when wait is set
@@ -177,11 +173,9 @@ public sealed class AutonomousDatabaseService
         using var database = factory.CreateDatabaseClient();
         var response = await database.GetAutonomousDatabase(new GetAutonomousDatabaseRequest { AutonomousDatabaseId = databaseId }, cancellationToken: cancellationToken);
         var strings = response.AutonomousDatabase.ConnectionStrings?.AllConnectionStrings;
-#pragma warning disable IDE0028
         return strings is null
             ? []
             : strings.Select(static x => new ConnectionStringInfo(x.Key, x.Value)).OrderBy(static x => x.Name, StringComparer.Ordinal).ToList();
-#pragma warning restore IDE0028
     }
 
     private static ValueTask<List<AutonomousDatabaseBackupSummary>> ListBackupsAsync(DatabaseClient database, string? compartmentId, string? databaseId, CancellationToken cancellationToken) =>
@@ -201,7 +195,6 @@ public sealed class AutonomousDatabaseService
             static x => x.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return requests
             .Select(static x => new WorkRequestInfo(
                 x.Id,
@@ -213,7 +206,6 @@ public sealed class AutonomousDatabaseService
                 x.TimeFinished))
             .OrderByDescending(static x => x.TimeAccepted)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     private static ValueTask WaitForStateAsync(DatabaseClient database, string databaseId, string targetState, int timeoutSeconds, IProgress<ProgressUpdate> progress, CancellationToken cancellationToken) =>

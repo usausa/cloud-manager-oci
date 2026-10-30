@@ -33,12 +33,10 @@ public sealed class LoggingService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return groups
             .Select(static x => new LogGroupInfo(x.Id, x.CompartmentId, x.DisplayName, x.Description, OciValues.State(x.LifecycleState), x.TimeCreated))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Logs of a log group
@@ -50,7 +48,6 @@ public sealed class LoggingService
             static x => x.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return logs
             .Select(static x => new LogInfo(
                 x.Id,
@@ -62,7 +59,6 @@ public sealed class LoggingService
                 DescribeSource(x.Configuration?.Source)))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Default query for a log group or a single log; the path starts with the compartment of the group
@@ -89,9 +85,7 @@ public sealed class LoggingService
             },
             cancellationToken: cancellationToken);
 
-#pragma warning disable IDE0028
         return (response.SearchResponse.Results ?? []).Select(static x => ToEntry(x.Data)).ToList();
-#pragma warning restore IDE0028
     }
 
     private static string? DescribeSource(Source? source) => source switch

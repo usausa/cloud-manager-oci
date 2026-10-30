@@ -56,9 +56,7 @@ public sealed partial class MetricsDialog
             foreach (var metric in Metrics)
             {
                 var series = await Service.GetMetricDataAsync(Namespace, $"{metric}[{resolution}]{{resourceId = \"{ResourceId}\"}}.mean()", start, end, resolution, CompartmentId, CancellationToken);
-#pragma warning disable IDE0028
                 result.Add(new ChartInfo(metric, series.Select(x => new MetricsChartSeries(x.ResourceDisplayName ?? metric, x.Points)).ToList()));
-#pragma warning restore IDE0028
             }
 
             charts = result;

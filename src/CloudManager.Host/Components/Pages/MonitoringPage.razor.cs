@@ -59,11 +59,9 @@ public sealed partial class MonitoringPage
         {
             var end = DateTime.UtcNow;
             var series = await Service.GetMetricDataAsync(metricNamespace.Trim(), metricQuery.Trim(), end.AddHours(-hours), end, null, null, CancellationToken);
-#pragma warning disable IDE0028
             metricSeries = series
                 .Select(x => new MetricsChartSeries(x.ResourceDisplayName ?? x.ResourceId ?? x.Name, x.Points))
                 .ToList();
-#pragma warning restore IDE0028
             metricsQueried = true;
         }, x => isMetricsLoading = x);
 }

@@ -54,14 +54,12 @@ public sealed class DnsService
             static x => x.RecordCollection.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return records
             .GroupBy(static x => (x.Domain, x.Rtype))
             .Select(static g => new DnsRecordInfo(g.Key.Domain, g.Key.Rtype, g.First().Ttl ?? 0, g.Select(static x => x.Rdata).ToList()))
             .OrderBy(static x => x.Domain, StringComparer.Ordinal)
             .ThenBy(static x => x.Rtype, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Replaces the record set of a domain and type

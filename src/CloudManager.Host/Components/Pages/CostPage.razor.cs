@@ -53,14 +53,12 @@ public sealed partial class CostPage
 
             total = byService.Sum(static x => x.Amount);
             currency = byService.Select(static x => x.Currency).FirstOrDefault(static x => !String.IsNullOrEmpty(x)) ?? string.Empty;
-#pragma warning disable IDE0028
             dailySeries =
             [
                 new MetricsChartSeries(
                     "コスト",
                     byDay.Select(static x => new MetricDataPoint(DateTime.SpecifyKind(x.Day, DateTimeKind.Utc).AddHours(12), (double)x.Amount)).ToList())
             ];
-#pragma warning restore IDE0028
         });
 
     private Task OnYearChangedAsync(int value)

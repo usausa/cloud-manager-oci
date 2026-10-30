@@ -60,14 +60,12 @@ public sealed class ResourceSearchService
         }
 
         var resources = await SearchAsync(query, MaxResults, cancellationToken);
-#pragma warning disable IDE0028
         return resources
             .GroupBy(static x => (x.ResourceType, State: (x.State ?? string.Empty).ToUpperInvariant()))
             .Select(static g => new ResourceStateCount(g.Key.ResourceType, g.Key.State, g.Count()))
             .OrderBy(static x => x.ResourceType, StringComparer.Ordinal)
             .ThenBy(static x => x.State, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Resource type names usable in queries
@@ -78,9 +76,7 @@ public sealed class ResourceSearchService
             page => search.ListResourceTypes(new ListResourceTypesRequest { Page = page }, cancellationToken: cancellationToken),
             static x => x.Items,
             static x => x.OpcNextPage);
-#pragma warning disable IDE0028
         return types.Select(static x => x.Name).Order(StringComparer.Ordinal).ToList();
-#pragma warning restore IDE0028
     }
 
     private static ResourceSummaryInfo ToInfo(ResourceSummary x) => new(

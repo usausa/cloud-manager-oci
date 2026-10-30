@@ -31,7 +31,6 @@ public sealed class FunctionsService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return applications
             .Select(static x => new FunctionsApplicationInfo(
                 x.Id,
@@ -42,7 +41,6 @@ public sealed class FunctionsService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Lists the functions of an application
@@ -54,7 +52,6 @@ public sealed class FunctionsService
             static x => x.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return functions
             .Select(static x => new FunctionInfo(
                 x.Id,
@@ -69,7 +66,6 @@ public sealed class FunctionsService
                 x.TimeUpdated))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Invokes a function through its invoke endpoint and returns the response body
@@ -107,11 +103,9 @@ public sealed class FunctionsService
         using var management = factory.CreateFunctionsManagementClient();
         var function = await management.GetFunction(new GetFunctionRequest { FunctionId = functionId }, cancellationToken: cancellationToken);
         var config = function.Function.Config;
-#pragma warning disable IDE0028
         return config is null
             ? []
             : config.Select(static x => new FunctionsConfigEntry(x.Key, x.Value)).OrderBy(static x => x.Key, StringComparer.Ordinal).ToList();
-#pragma warning restore IDE0028
     }
 
     // Replaces the configuration entries of a function

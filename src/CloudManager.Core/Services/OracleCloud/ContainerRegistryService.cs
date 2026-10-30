@@ -29,7 +29,6 @@ public sealed class ContainerRegistryService
             cancellationToken);
 
         var host = RegistryHost;
-#pragma warning disable IDE0028
         return repositories
             .Select(x => new ContainerRepositoryInfo(
                 x.Id,
@@ -43,7 +42,6 @@ public sealed class ContainerRegistryService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Lists the images of a repository; the name is unique in the tenancy, so the compartments in scope are searched
@@ -57,7 +55,6 @@ public sealed class ContainerRegistryService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return images
             .Select(static x => new ContainerImageInfo(
                 x.Id,
@@ -68,7 +65,6 @@ public sealed class ContainerRegistryService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderByDescending(static x => x.TimeCreated)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Deletes an image by OCID

@@ -31,7 +31,6 @@ public sealed class BastionService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return bastions
             .Select(static x => new BastionInfo(
                 x.Id,
@@ -44,7 +43,6 @@ public sealed class BastionService
                 x.TimeCreated))
             .OrderBy(static x => x.Name, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Sessions of a bastion, newest first
@@ -56,12 +54,10 @@ public sealed class BastionService
             static x => x.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return sessions
             .Select(static x => ToInfo(x.Id, x.DisplayName, x.TargetResourceDetails, x.LifecycleState, x.SessionTtlInSeconds, x.TimeCreated))
             .OrderByDescending(static x => x.TimeCreated)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Session with the SSH command provided by the service

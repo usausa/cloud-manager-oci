@@ -102,7 +102,6 @@ public sealed class IdentityDomainsService
             static x => x.Items,
             static x => x.OpcNextPage);
 
-#pragma warning disable IDE0028
         return domains
             .Select(static x => new IdentityDomainInfo(
                 x.Id,
@@ -116,7 +115,6 @@ public sealed class IdentityDomainsService
                 x.TimeCreated))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     private static DomainUserInfo ToInfo(User user)

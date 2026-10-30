@@ -25,7 +25,6 @@ public sealed class VcnService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return vcns
             .Select(static x => new VcnInfo(
                 x.Id,
@@ -37,7 +36,6 @@ public sealed class VcnService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Loads the components of a VCN in parallel; they are listed in the compartment of the VCN
@@ -86,7 +84,6 @@ public sealed class VcnService
             static x => x.OpcNextPage).AsTask();
         await Task.WhenAll(subnetsTask, routeTablesTask, securityListsTask, nsgsTask, igwsTask, natsTask, sgwsTask);
 
-#pragma warning disable IDE0028
         return new VcnDetail(
             new VcnInfo(vcn.Id, vcn.CompartmentId, vcn.DisplayName, String.Join(", ", vcn.CidrBlocks ?? [vcn.CidrBlock]), OciValues.State(vcn.LifecycleState), vcn.DnsLabel, vcn.TimeCreated.GetValueOrDefault()),
             (await subnetsTask)
@@ -114,6 +111,5 @@ public sealed class VcnService
             (await sgwsTask)
                 .Select(static x => new ServiceGatewayInfo(x.Id, x.DisplayName, String.Join(", ", (x.Services ?? []).Select(static s => s.ServiceName)), OciValues.State(x.LifecycleState)))
                 .ToList());
-#pragma warning restore IDE0028
     }
 }

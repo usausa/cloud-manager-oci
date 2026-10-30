@@ -29,7 +29,6 @@ public sealed class VaultService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return secrets
             .Select(static x => new SecretInfo(
                 x.Id,
@@ -44,7 +43,6 @@ public sealed class VaultService
                 x.LastRotationTime))
             .OrderBy(static x => x.SecretName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Current value of a secret (base64 content decoded)

@@ -116,9 +116,7 @@ public sealed class OciSession
             var regions = await identity.ListRegionSubscriptionsAsync();
 
             Compartments = compartments;
-#pragma warning disable IDE0028
             AvailableRegions = regions.Select(static x => x.RegionName).ToList();
-#pragma warning restore IDE0028
             UpdateScope();
             IsLoaded = true;
         }

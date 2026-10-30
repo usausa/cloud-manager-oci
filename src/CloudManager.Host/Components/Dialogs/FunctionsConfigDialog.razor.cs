@@ -28,9 +28,7 @@ public sealed partial class FunctionsConfigDialog
         LoadAsync(async () =>
         {
             var config = await Service.GetConfigAsync(FunctionId, CancellationToken);
-#pragma warning disable IDE0028
             entries = config.Select(static x => new ConfigEntry { Key = x.Key, Value = x.Value }).ToList();
-#pragma warning restore IDE0028
         });
 
     private async Task SaveAsync()

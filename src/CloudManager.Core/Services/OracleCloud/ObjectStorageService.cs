@@ -43,12 +43,10 @@ public sealed class ObjectStorageService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return buckets
             .Select(static x => new BucketInfo(x.Name, x.Namespace, x.CompartmentId, x.CreatedBy, x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.Name, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Lists one hierarchy level under the prefix
@@ -301,11 +299,9 @@ public sealed class ObjectStorageService
             .OrderByDescending(static x => x.TimeModified)
             .ToList();
         var latest = ordered.FirstOrDefault(static x => !(x.IsDeleteMarker ?? false));
-#pragma warning disable IDE0028
         return ordered
             .Select(x => new ObjectVersionInfo(x.VersionId, ReferenceEquals(x, latest), x.TimeModified, x.Size ?? 0, x.IsDeleteMarker ?? false))
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Restores a version by copying it over the current object
@@ -324,7 +320,6 @@ public sealed class ObjectStorageService
         try
         {
             var response = await storage.GetObjectLifecyclePolicy(new GetObjectLifecyclePolicyRequest { NamespaceName = namespaceName, BucketName = bucketName }, cancellationToken: cancellationToken);
-#pragma warning disable IDE0028
             return (response.ObjectLifecyclePolicy.Items ?? [])
                 .Select(static x => new ObjectLifecycleRuleInfo(
                     x.Name,
@@ -334,7 +329,6 @@ public sealed class ObjectStorageService
                     x.IsEnabled ?? false,
                     x.ObjectNameFilter?.InclusionPrefixes ?? []))
                 .ToList();
-#pragma warning restore IDE0028
         }
         catch (OciException ex) when (ex.IsNotFound())
         {

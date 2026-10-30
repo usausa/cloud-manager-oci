@@ -39,9 +39,7 @@ public sealed partial class NosqlQueryDialog
         LoadAsync(async () =>
         {
             rows = await Service.QueryAsync(CompartmentId, statement, limit, CancellationToken);
-#pragma warning disable IDE0028
             columns = rows.SelectMany(static x => x.Columns.Keys).Distinct(StringComparer.Ordinal).ToList();
-#pragma warning restore IDE0028
             executed = true;
         });
 }

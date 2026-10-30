@@ -79,11 +79,9 @@ public sealed class QueueService
             new GetMessagesRequest { QueueId = queueId, Limit = limit, VisibilityInSeconds = visibilitySeconds, TimeoutInSeconds = 0 },
             cancellationToken: cancellationToken);
 
-#pragma warning disable IDE0028
         return (response.GetMessages.Messages ?? [])
             .Select(static x => new QueueMessageInfo(x.Id ?? 0, x.Receipt, x.Content, x.DeliveryCount ?? 0, x.VisibleAfter, x.ExpireAfter))
             .ToList();
-#pragma warning restore IDE0028
     }
 
     public async ValueTask DeleteMessageAsync(string queueId, string messagesEndpoint, string receipt, CancellationToken cancellationToken = default)

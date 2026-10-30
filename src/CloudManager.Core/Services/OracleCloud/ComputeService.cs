@@ -55,7 +55,6 @@ public sealed class ComputeService
 
         var addresses = await ResolveAddressesAsync(compute, network, instances, cancellationToken);
 
-#pragma warning disable IDE0028
         return instances
             .Select(x =>
             {
@@ -76,7 +75,6 @@ public sealed class ComputeService
             })
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Starts an instance, polling until RUNNING when wait is set

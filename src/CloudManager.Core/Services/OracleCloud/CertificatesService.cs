@@ -26,7 +26,6 @@ public sealed class CertificatesService
             cancellationToken);
 
         var now = DateTime.UtcNow;
-#pragma warning disable IDE0028
         return items
             .Select(x =>
             {
@@ -44,7 +43,6 @@ public sealed class CertificatesService
             })
             .OrderBy(static x => x.Name, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Details of the current certificate version
@@ -54,7 +52,6 @@ public sealed class CertificatesService
         var response = await certificates.GetCertificate(new GetCertificateRequest { CertificateId = certificateId }, cancellationToken: cancellationToken);
         var certificate = response.Certificate;
         var version = certificate.CurrentVersion;
-#pragma warning disable IDE0028
         return new CertificateDetail(
             certificate.Id,
             certificate.Name,
@@ -70,6 +67,5 @@ public sealed class CertificatesService
             version?.Validity?.TimeOfValidityNotBefore,
             version?.Validity?.TimeOfValidityNotAfter,
             (version?.Stages ?? []).Select(static x => OciValues.State(x)).ToList());
-#pragma warning restore IDE0028
     }
 }

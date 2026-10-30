@@ -36,7 +36,6 @@ public sealed class MonitoringService
             cancellationToken);
         var statusById = statuses.ToDictionary(static x => x.Id, static x => x, StringComparer.Ordinal);
 
-#pragma warning disable IDE0028
         return alarms
             .Select(x =>
             {
@@ -55,7 +54,6 @@ public sealed class MonitoringService
             })
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Runs an MQL query (e.g. CpuUtilization[5m].mean()) and returns one series per resource.
@@ -81,7 +79,6 @@ public sealed class MonitoringService
             },
             cancellationToken: cancellationToken);
 
-#pragma warning disable IDE0028
         return response.Items
             .Select(static x => new MetricSeriesInfo(
                 x.Name,
@@ -93,7 +90,6 @@ public sealed class MonitoringService
                     .OrderBy(static p => p.Timestamp)
                     .ToList()))
             .ToList();
-#pragma warning restore IDE0028
     }
 }
 #pragma warning restore CA1724

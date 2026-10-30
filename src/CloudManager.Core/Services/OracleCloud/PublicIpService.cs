@@ -34,7 +34,6 @@ public sealed class PublicIpService
             static x => x.OpcNextPage,
             cancellationToken);
 
-#pragma warning disable IDE0028
         return publicIps
             .Select(static x => new PublicIpInfo(
                 x.Id,
@@ -49,7 +48,6 @@ public sealed class PublicIpService
                 x.TimeCreated.GetValueOrDefault()))
             .OrderBy(static x => x.DisplayName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Assigns a reserved public IP to the primary private IP of an instance

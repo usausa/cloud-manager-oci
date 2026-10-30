@@ -21,14 +21,12 @@ public sealed class CostService
         var start = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
         var items = await RequestAsync(start, start.AddMonths(1), RequestSummarizedUsagesDetails.GranularityEnum.Monthly, compartmentId, cancellationToken);
 
-#pragma warning disable IDE0028
         return items
             .GroupBy(static x => (Service: x.Service ?? "-", Currency: x.Currency ?? string.Empty))
             .Select(static g => new CostByServiceInfo(g.Key.Service, g.Sum(static x => x.ComputedAmount ?? 0m), g.Sum(static x => x.ComputedQuantity ?? 0m), g.Key.Currency))
             .Where(static x => x.Amount != 0)
             .OrderByDescending(static x => x.Amount)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     // Daily cost totals between two UTC dates (end exclusive)
@@ -36,14 +34,12 @@ public sealed class CostService
     {
         var items = await RequestAsync(start.Date, end.Date, RequestSummarizedUsagesDetails.GranularityEnum.Daily, compartmentId, cancellationToken);
 
-#pragma warning disable IDE0028
         return items
             .Where(static x => x.TimeUsageStarted.HasValue)
             .GroupBy(static x => (Day: x.TimeUsageStarted!.Value.Date, Currency: x.Currency ?? string.Empty))
             .Select(static g => new CostByDayInfo(g.Key.Day, g.Sum(static x => x.ComputedAmount ?? 0m), g.Key.Currency))
             .OrderBy(static x => x.Day)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     private async ValueTask<List<UsageSummary>> RequestAsync(DateTime start, DateTime end, RequestSummarizedUsagesDetails.GranularityEnum granularity, string? compartmentId, CancellationToken cancellationToken)

@@ -51,13 +51,11 @@ public sealed class IdentityService
     {
         using var identity = factory.CreateIdentityClient();
         var response = await identity.ListRegionSubscriptions(new ListRegionSubscriptionsRequest { TenancyId = factory.TenancyId }, cancellationToken: cancellationToken);
-#pragma warning disable IDE0028
         return response.Items
             .Select(static x => new RegionSubscriptionInfo(x.RegionName, x.RegionKey, x.IsHomeRegion ?? false, OciValues.State(x.Status)))
             .OrderByDescending(static x => x.IsHomeRegion)
             .ThenBy(static x => x.RegionName, StringComparer.Ordinal)
             .ToList();
-#pragma warning restore IDE0028
     }
 
     private static CompartmentInfo ToInfo(Compartment compartment, string rootName, Dictionary<string, Compartment> byId)
