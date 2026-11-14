@@ -98,7 +98,7 @@
                 <MudTd>@(context.IsAutomatic ? "✓" : "")</MudTd>
                 <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeStarted)</MudTd>
                 <MudTd Class="no-wrap">@DisplayFormat.Time(context.TimeEnded)</MudTd>
-                <MudTd>@(context.SizeTb?.ToString("F3") ?? "-")</MudTd>
+                <MudTd>@(context.SizeTb?.ToString("F3", CultureInfo.InvariantCulture) ?? "-")</MudTd>
                 <MudTd>@(context.RetentionDays?.ToString() ?? "-")</MudTd>
                 <MudTd>
                     @if (context.IsRestorable && context.TimeEnded.HasValue)
