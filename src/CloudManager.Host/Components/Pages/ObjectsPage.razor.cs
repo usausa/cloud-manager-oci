@@ -48,7 +48,7 @@ public sealed partial class ObjectsPage
     private Task GoUpAsync()
     {
         var trimmed = prefix.TrimEnd('/');
-        var index = trimmed.LastIndexOf('/');
+        var index = trimmed.LastIndexOf('/', StringComparison.Ordinal);
         prefix = index < 0 ? string.Empty : trimmed[..(index + 1)];
         return LoadObjectsAsync();
     }

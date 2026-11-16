@@ -129,6 +129,8 @@ public sealed class OciClientFactory
 
     public FunctionsManagementClient CreateFunctionsManagementClient() => Configure(new FunctionsManagementClient(Resolve().Provider, ClientConfiguration));
 
+    public WorkRequestManagementClient CreateFunctionsWorkRequestClient() => Configure(new WorkRequestManagementClient(Resolve().Provider, ClientConfiguration));
+
     // The invoke endpoint differs per function
     public FunctionsInvokeClient CreateFunctionsInvokeClient(string invokeEndpoint)
     {

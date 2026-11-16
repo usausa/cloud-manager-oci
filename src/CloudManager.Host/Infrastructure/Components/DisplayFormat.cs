@@ -11,7 +11,7 @@ public static class DisplayFormat
             return id ?? "-";
         }
 
-        var second = id.IndexOf('.', id.IndexOf('.', StringComparison.Ordinal) + 1);
+        var second = id.IndexOf('.', id.IndexOf('.', StringComparison.Ordinal) + 1, StringComparison.Ordinal);
         var prefix = second > 0 ? id[..second] : id[..12];
         return $"{prefix}…{id[^8..]}";
     }

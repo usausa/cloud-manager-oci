@@ -13,6 +13,10 @@ public sealed class FunctionsService
     public const string InvokeTypeSync = "Sync";
     public const string InvokeTypeDetached = "Detached";
 
+    private const int WorkRequestTimeoutSeconds = 600;
+
+    private static readonly TimeSpan WorkRequestPollInterval = TimeSpan.FromSeconds(2);
+
     private readonly OciClientFactory factory;
 
     public FunctionsService(OciClientFactory factory)
@@ -58,7 +62,7 @@ public sealed class FunctionsService
                 x.DisplayName,
                 x.ApplicationId,
                 OciValues.State(x.LifecycleState),
-                x.Image,
+                (x.SourceDetails as ContainerImageFunctionSourceDetails)?.Image,
                 x.MemoryInMBs.HasValue ? (int)x.MemoryInMBs.Value : null,
                 x.TimeoutInSeconds,
                 x.InvokeEndpoint,
@@ -112,20 +116,22 @@ public sealed class FunctionsService
     public async ValueTask UpdateConfigAsync(string functionId, Dictionary<string, string> config, CancellationToken cancellationToken = default)
     {
         using var management = factory.CreateFunctionsManagementClient();
-        await management.UpdateFunction(
+        var response = await management.UpdateFunction(
             new UpdateFunctionRequest
             {
                 FunctionId = functionId,
                 UpdateFunctionDetails = new UpdateFunctionDetails { Config = config }
             },
             cancellationToken: cancellationToken);
+
+        await WaitForWorkRequestAsync(response.OpcWorkRequestId, cancellationToken);
     }
 
     // Sets provisioned concurrency, null disables it
     public async ValueTask SetProvisionedConcurrencyAsync(string functionId, int? count, CancellationToken cancellationToken = default)
     {
         using var management = factory.CreateFunctionsManagementClient();
-        await management.UpdateFunction(
+        var response = await management.UpdateFunction(
             new UpdateFunctionRequest
             {
                 FunctionId = functionId,
@@ -137,6 +143,31 @@ public sealed class FunctionsService
                 }
             },
             cancellationToken: cancellationToken);
+
+        await WaitForWorkRequestAsync(response.OpcWorkRequestId, cancellationToken);
+    }
+
+    private async ValueTask WaitForWorkRequestAsync(string workRequestId, CancellationToken cancellationToken)
+    {
+        using var workRequest = factory.CreateFunctionsWorkRequestClient();
+        var deadline = DateTime.UtcNow.AddSeconds(WorkRequestTimeoutSeconds);
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Delay(WorkRequestPollInterval, cancellationToken);
+
+            var response = await workRequest.GetWorkRequest(new GetWorkRequestRequest { WorkRequestId = workRequestId }, cancellationToken: cancellationToken);
+            switch (response.WorkRequest.Status)
+            {
+                case OperationStatus.Succeeded:
+                    return;
+                case OperationStatus.Failed:
+                case OperationStatus.Canceled:
+                    throw new InvalidOperationException($"Update work request {OciValues.State(response.WorkRequest.Status)}. id=[{workRequestId}]");
+            }
+        }
+
+        throw new TimeoutException($"Update work request did not complete within {WorkRequestTimeoutSeconds} seconds.");
     }
 }
 #pragma warning restore CA1724
